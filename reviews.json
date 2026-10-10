@@ -1,1 +1,44 @@
-[]
+[
+ {
+  "name": "Emily Carter",
+  "location": "United Kingdom",
+  "rating": 5,
+  "title": "Really impressed with the design",
+  "body": "The first thing I noticed was how nice it looks. It feels like something you’d expect from a much more expensive skincare brand, and I love that it comes with the extra accessories too."
+ },
+ {
+  "name": "Olivia Bennett",
+  "location": "United States",
+  "rating": 5,
+  "title": "Perfect for my evening routine",
+  "body": "I’ve been trying to be more consistent with looking after my skin, so I wanted something I could easily add to my routine. It’s simple to use and doesn’t feel like another chore."
+ },
+ {
+  "name": "Sophie Williams",
+  "location": "United Kingdom",
+  "rating": 5,
+  "title": "Love how everything comes together",
+  "body": "The little extras make the set feel much more complete. I especially like the overall look of the device, and it’s nice having everything together rather than buying separate bits."
+ },
+ {
+  "name": "Madison Reed",
+  "location": "United States",
+  "rating": 5,
+  "title": "Looks beautiful on my vanity",
+  "body": "I know it’s a small thing, but I really appreciate when skincare products look good as well as being practical. The design is clean and modern, and it fits in perfectly with the rest of my things."
+ },
+ {
+  "name": "Charlotte Hughes",
+  "location": "United Kingdom",
+  "rating": 5,
+  "title": "A nice addition to my skincare collection",
+  "body": "I wanted to try something different with my at-home skincare routine. The device is easy to handle, and I like that I can take my time using it without having to book anything."
+ },
+ {
+  "name": "Ava Thompson",
+  "location": "United States",
+  "rating": 5,
+  "title": "The extras make it feel worth it",
+  "body": "I was pleasantly surprised that it came with additional skincare accessories. The whole set looks well put together, and I like the idea of having a little self-care routine at home."
+ }
+]

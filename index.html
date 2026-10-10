@@ -370,6 +370,8 @@ p{margin:0}
 .rev-more[hidden]{display:none}
 .review .media > img{position:static;height:auto}
 .review time{white-space:nowrap}
+.rev-who{color:var(--ink);font-weight:500}
+.rev-who small{display:block;font-weight:400;color:var(--taupe);font-size:12.5px;margin-top:2px}
 .rev-grid{columns:3 280px;column-gap:20px}
 .review{break-inside:avoid;background:var(--sand);margin:0 0 20px;padding:22px}
 .review .media{margin:-22px -22px 18px}
@@ -1351,7 +1353,7 @@ $("#newsForm").addEventListener("submit", e => {
       <span class="stars" role="img" aria-label="${n} out of 5 stars">${star.repeat(n)}</span>
       ${r.title ? `<h3>${esc(r.title)}</h3>` : ""}
       <p>${esc(r.body)}</p>
-      <footer><span>${esc(r.name)}</span>${r.date ? `<time datetime="${esc(r.date)}">${fmtDate(r.date)}</time>` : ""}</footer>
+      <footer><span class="rev-who">${esc(r.name)}${r.location ? `<small>${esc(r.location)}</small>` : ""}</span>${r.date ? `<time datetime="${esc(r.date)}">${fmtDate(r.date)}</time>` : ""}</footer>
     </article>`;
   };
   const page = () => {
