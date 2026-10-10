@@ -209,6 +209,8 @@ module.exports = async function handler(req, res) {
       idempotency_key: randomUUID(),
       order: {
         location_id: e.location,
+        reference_id: "AUR-" + randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase(),
+        metadata: { market },
         line_items: [{
           name: PRODUCT_NAME,
           quantity: String(qty),
@@ -225,6 +227,15 @@ module.exports = async function handler(req, res) {
     };
     const prefill = cleanCustomer(body.customer, market);
     if (prefill) payload.pre_populated_data = prefill;
+    // Backup copy of contact details on the order, for the orders dashboard.
+    if (prefill) {
+      const m = payload.order.metadata;
+      if (prefill.buyer_email) m.email = prefill.buyer_email;
+      if (prefill.buyer_phone_number) m.phone = prefill.buyer_phone_number;
+      const a = prefill.buyer_address;
+      const name = a ? [a.first_name, a.last_name].filter(Boolean).join(" ").slice(0, 120) : "";
+      if (name) m.name = name;
+    }
 
     let r = await square("/v2/online-checkout/payment-links", { method: "POST", body: payload });
     // If Square objects to the pre-filled details, try once more without them
