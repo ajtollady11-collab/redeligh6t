@@ -182,6 +182,8 @@ p{margin:0}
 .price{font-family:var(--serif);font-size:34px;line-height:1}
 .compare{color:var(--taupe);text-decoration:line-through;font-size:18px}
 .save{background:var(--black);color:var(--ivory);font-size:12px;letter-spacing:.06em;padding:5px 10px;align-self:center}
+.fx-line{margin-top:6px;font-size:12.5px;color:var(--taupe)}
+.fx-line:empty{display:none}
 .ship-line{margin-top:8px;font-size:14px;color:var(--stone)}
 .ticks{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:10px}
 .ticks li{display:flex;gap:12px;align-items:flex-start;font-size:15.5px}
@@ -604,6 +606,7 @@ p{margin:0}
         <span class="save">SAVE <span data-p="save">£30.00</span></span>
       </div>
       <p class="ship-line reveal d2"><span data-market-text="shippingShort">Free UK shipping</span>. 3 free gifts included.<br>Estimated delivery in 5–10 business days.</p>
+      <p class="fx-line" data-market-text="fxNote"></p>
 
       <ul class="ticks reveal d3">
         <li><svg width="16" height="16"><use href="#i-check"/></svg>Three LED light modes for different skin moods</li>
@@ -1061,13 +1064,15 @@ const CONFIG = {
       label: "UK", currency: "GBP", locale: "en-GB",
       price: 49.99, compare: 79.99, giftValue: 29.99,
       shipping: "Free shipping on every UK order",
-      shippingShort: "Free UK shipping"
+      shippingShort: "Free UK shipping",
+      fxNote: ""
     },
     US: {
       label: "US", currency: "USD", locale: "en-US",
       price: 64.99, compare: 89.99, giftValue: 39.99, // confirm the US gift value
       shipping: "Free shipping on every US order",
-      shippingShort: "Free US shipping"
+      shippingShort: "Free US shipping",
+      fxNote: "Charged in GBP at checkout at the equivalent of the US price."
     }
   }
 };

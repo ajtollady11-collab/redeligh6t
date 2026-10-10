@@ -95,6 +95,10 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
 .tot{display:flex;justify-content:space-between;font-size:14.5px;margin-top:12px;color:var(--stone)}
 .tot.grand{color:var(--ink);font-size:18px;font-weight:500;margin-top:16px;padding-top:16px;border-top:1px solid var(--linen)}
 .note{font-size:13px;color:var(--stone);margin-top:14px}
+.fx{margin-top:14px;padding:14px;background:var(--ivory);border:1px solid var(--linen)}
+.fx .tot{margin-top:0;color:var(--ink);font-weight:500}
+.fx p{font-size:12.5px;color:var(--stone);margin:8px 0 0;line-height:1.5}
+.fx[hidden]{display:none}
 .empty{padding:64px 0;text-align:center}
 .empty a{display:inline-flex;align-items:center;min-height:52px;padding:0 28px;margin-top:20px;background:var(--black);color:var(--ivory);text-decoration:none;font-weight:500}
 </style>
@@ -179,7 +183,7 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
           <span id="payLabel">Continue to payment</span>
         </button>
         <p class="form-msg" id="formMsg" role="alert" hidden></p>
-        <p class="after">Next, you'll pay securely with Square by card, Apple Pay or Google Pay. Your details will already be filled in.</p>
+        <p class="after" id="afterNote">Next, you'll pay securely with Square by card, Apple Pay or Google Pay. Your details will already be filled in.</p>
       </form>
       <a class="back-link" href="/">Back to the shop</a>
     </section>
@@ -209,6 +213,10 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
         <div class="tot"><span>Subtotal</span><span id="subtotal">£49.99</span></div>
         <div class="tot"><span>Shipping</span><span>FREE</span></div>
         <div class="tot grand"><span>Total</span><span id="total">£49.99</span></div>
+        <div class="fx" id="fx" hidden>
+          <div class="tot"><span>Charged in pounds (GBP)</span><span id="fxTotal">…</span></div>
+          <p>Our payment provider charges in GBP, so you'll pay the equivalent of <span id="fxShown">$64.99</span> at today's exchange rate. Your bank converts it back to dollars, so the amount on your statement may differ slightly and may include your card's foreign transaction fee.</p>
+        </div>
         <p class="note">Estimated delivery in 5–10 business days. 30-day money-back guarantee.</p>
       </div>
     </aside>
@@ -238,16 +246,11 @@ const M = MARKETS[marketCode];
 let qty = Math.max(0, Math.min(10, Number(store.get(LS,"aureli-cart")) || 0));
 const fmt = n => new Intl.NumberFormat(M.locale, { style:"currency", currency:M.currency }).format(n);
 
-/* Empty bag: nothing to check out */
-if (!qty) {
-  $("#layout").innerHTML = '<div class="empty" style="grid-column:1/-1"><h1>Your bag is empty</h1><p style="color:var(--stone)">Add the Aureli wand and your 3 free gifts to check out.</p><a href="/#product">Shop the wand</a></div>';
-} else {
-  init();
-}
 
 function init(){
   document.documentElement.lang = M.locale;
   $("#countryName").textContent = M.countryName;
+  if (marketCode === "US") $("#afterNote").textContent = "Next, you'll pay securely with Square by card, Apple Pay or Google Pay, charged in GBP. Your details will already be filled in.";
   $("#dial").textContent = M.dial;
   $("#cityLabel").textContent = M.city;
   $("#postalLabel").textContent = M.postal;
@@ -262,6 +265,7 @@ function init(){
   }
   renderSummary();
   restoreDraft();
+  loadQuote();
 
   document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => {
     qty = Math.max(1, Math.min(10, qty + Number(b.dataset.q)));
@@ -288,6 +292,18 @@ function setBodyVisibility(){
   $("#sumBody").hidden = mobile && $("#sumToggle").getAttribute("aria-expanded") !== "true";
 }
 
+/* What Square will actually charge (US orders are charged in GBP). */
+let chargeQuote = null;
+async function loadQuote(){
+  try {
+    const r = await fetch("/api/checkout?market=" + marketCode, { cache: "no-store" });
+    if (!r.ok) return;
+    const q = await r.json();
+    if (q && q.converted && q.unitAmount > 0) { chargeQuote = q; renderSummary(); }
+  } catch (e) {}
+}
+const fmtCharge = minor => new Intl.NumberFormat(M.locale, { style:"currency", currency: chargeQuote.currency }).format(minor / 100);
+
 function renderSummary(){
   $("#qty").textContent = qty;
   document.querySelectorAll(".gq").forEach(e => e.textContent = "× " + qty);
@@ -295,6 +311,12 @@ function renderSummary(){
   $("#lineTotal").textContent = t;
   $("#lineCompare").textContent = fmt(M.compare * qty);
   $("#subtotal").textContent = t; $("#total").textContent = t; $("#totalTop").textContent = t;
+  if (chargeQuote) {
+    $("#fx").hidden = false;
+    $("#fxTotal").textContent = fmtCharge(chargeQuote.unitAmount * qty);
+    $("#fxShown").textContent = t;
+    $("#totalTop").textContent = t + " (" + fmtCharge(chargeQuote.unitAmount * qty) + ")";
+  }
   $("#payLabel").textContent = "Continue to payment";
 }
 
@@ -373,13 +395,20 @@ async function submit(e){
     });
     const data = await r.json().catch(() => ({}));
     if (r.ok && data.url) { window.location.href = data.url; return; }
-    msg.textContent = data.message || "We couldn't open payment. Please try again.";
+    msg.textContent = data.message || ("We couldn't open payment (error " + r.status + "). Please try again.");
   } catch (err) {
     msg.textContent = "We couldn't reach payment. Check your connection and try again.";
   }
   msg.hidden = false;
   busy = false; btn.disabled = false; btn.removeAttribute("aria-busy");
   $("#payLabel").textContent = "Continue to payment";
+}
+
+/* Empty bag: nothing to check out */
+if (!qty) {
+  $("#layout").innerHTML = '<div class="empty" style="grid-column:1/-1"><h1>Your bag is empty</h1><p style="color:var(--stone)">Add the Aureli wand and your 3 free gifts to check out.</p><a href="/#product">Shop the wand</a></div>';
+} else {
+  init();
 }
 </script>
 </body>

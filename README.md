@@ -21,22 +21,26 @@ Everyone else sees `defaultMarket`. Visitors can switch with the UK £ / US $ to
 ## Checkout (Square)
 The bag's "Checkout securely" button (and "Buy it now") opens `checkout.html` on your own site,
 where customers enter email, phone and shipping address. "Continue to payment" calls
-`api/checkout.js`, which creates a Square payment page for the exact quantity with those details
+`api/checkout.js` (the only payment file), which creates a Square payment page for the exact quantity with those details
 already filled in, so customers only add payment there (card, Apple Pay, Google Pay).
 After paying, customers land on `thank-you.html`. Orders, with shipping address, appear in your
 Square Dashboard.
 Prices are set in `api/checkout.js` (PRICES), not in the browser, so they can't be tampered with.
-If you change a price, change it there AND in CONFIG in `index.html`.
+If you change a price, change it there AND in CONFIG in `index.html` AND in MARKETS in `checkout.html`.
 
-Set these in Vercel > Project > Settings > Environment Variables, then redeploy:
+Set these in Vercel > Project > Settings > Environment Variables, then redeploy.
+To check the connection at any time, open https://YOUR-SITE/api/checkout?check=1
+
 - `SQUARE_ACCESS_TOKEN`  production access token (developer.squareup.com > your app > Credentials)
 - `SQUARE_LOCATION_ID`   developer.squareup.com > your app > Locations
 - `SQUARE_CURRENCY`      `GBP` for a UK Square account, `USD` for a US one
 - `SQUARE_ENVIRONMENT`   optional: `sandbox` while testing with sandbox credentials
 
-A Square account can only charge in its own country's currency. A second account for the other
-market can be added with `SQUARE_US_ACCESS_TOKEN` + `SQUARE_US_LOCATION_ID` (or `SQUARE_UK_...`).
-Without it, checkout for that market shows "isn't available yet".
+US orders: a Square account can only charge in its own currency. US shoppers see $64.99 on the
+site; at checkout they're charged the GBP equivalent at the day's European Central Bank rate
+(in `api/checkout.js`, refreshed every 6 hours). The checkout page shows the exact GBP amount before
+they pay. If the rate service is down, a fallback rate is used: set `FX_FALLBACK_USD_GBP` in Vercel
+(e.g. `0.75`) and update it occasionally.
 
 ## Images
 All 19 product images are in `images/` as WebP, each in three sizes (`-s` 240px, `-m` 640px, `-l` full).
