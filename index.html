@@ -467,6 +467,7 @@ p{margin:0}
 .drawer-foot{padding:20px 24px calc(20px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--linen);background:var(--white)}
 .tot{display:flex;justify-content:space-between;font-size:15px;margin-bottom:6px}
 .tot.grand{font-size:18px;font-weight:500;margin:10px 0 16px}
+#checkoutBtn[disabled]{opacity:.7;cursor:progress}
 .checkout-note{font-size:12.5px;color:var(--taupe);text-align:center;margin-top:10px}
 .checkout-msg{font-size:13px;color:#8a2f24;margin-top:10px;text-align:center}
 .toast{position:fixed;left:50%;bottom:90px;transform:translate(-50%,20px);background:var(--black);color:var(--ivory);padding:12px 18px;font-size:14px;z-index:110;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
@@ -1041,7 +1042,7 @@ p{margin:0}
     <div class="tot grand"><span>Total</span><span id="cartTotal">£49.99</span></div>
     <button class="btn block" id="checkoutBtn" type="button"><svg width="16" height="16"><use href="#i-lock"/></svg> Checkout securely</button>
     <p class="checkout-msg" id="checkoutMsg" role="alert" hidden></p>
-    <p class="checkout-note"><span data-guarantee-days>30</span>-day money-back guarantee</p>
+    <p class="checkout-note">Secure payment by Square. <span data-guarantee-days>30</span>-day money-back guarantee.</p>
   </div>
 </aside>
 
@@ -1060,17 +1061,13 @@ const CONFIG = {
       label: "UK", currency: "GBP", locale: "en-GB",
       price: 49.99, compare: 79.99, giftValue: 29.99,
       shipping: "Free shipping on every UK order",
-      shippingShort: "Free UK shipping",
-      // Paste your UK checkout link here (Shopify cart permalink, Stripe Payment Link, etc.)
-      // Use {qty} where the quantity should go, e.g. "https://yourstore.myshopify.com/cart/VARIANT_ID:{qty}"
-      checkoutUrl: ""
+      shippingShort: "Free UK shipping"
     },
     US: {
       label: "US", currency: "USD", locale: "en-US",
       price: 64.99, compare: 89.99, giftValue: 39.99, // confirm the US gift value
       shipping: "Free shipping on every US order",
-      shippingShort: "Free US shipping",
-      checkoutUrl: ""
+      shippingShort: "Free US shipping"
     }
   }
 };
@@ -1286,19 +1283,14 @@ function toast(msg){
   clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200);
 }
 function checkout(){
-  const m = CONFIG.markets[market];
-  if (!m.checkoutUrl) {
-    const msg = $("#checkoutMsg");
-    msg.textContent = "Checkout isn't connected yet. Add your " + m.label + " checkout link in CONFIG.markets." + market + ".checkoutUrl.";
-    msg.hidden = false;
-    return;
-  }
-  window.location.href = m.checkoutUrl.replace("{qty}", String(Math.max(1, cartQty)));
+  if (!cartQty) return;
+  saveCart();
+  window.location.href = "/checkout.html?m=" + encodeURIComponent(market);
 }
 
 $("#atc").addEventListener("click", () => addToCart(pickQty));
 $$("[data-add]").forEach(b => b.addEventListener("click", () => addToCart(1)));
-$("#buyNow").addEventListener("click", () => { if (!cartQty) addToCart(pickQty, false); openCart(); checkout(); });
+$("#buyNow").addEventListener("click", () => { if (!cartQty) addToCart(pickQty, false); checkout(); });
 $("#bagBtn").addEventListener("click", openCart);
 $("#closeDrawer").addEventListener("click", closeCart);
 scrim.addEventListener("click", closeCart);

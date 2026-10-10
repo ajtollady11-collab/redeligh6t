@@ -18,11 +18,25 @@ Edit the `CONFIG` block near the bottom of `index.html`.
 Visitors in the UK see £, US see $. Detection uses Vercel's IP country, with a timezone fallback.
 Everyone else sees `defaultMarket`. Visitors can switch with the UK £ / US $ toggle.
 
-## Checkout
-Paste a checkout link into `checkoutUrl` for each market. `{qty}` is replaced with the quantity.
-- Shopify: `https://YOURSTORE.myshopify.com/cart/VARIANT_ID:{qty}`
-- Stripe Payment Link: paste the link (set quantity rules in Stripe)
-Until then, the checkout button shows a "not connected yet" note.
+## Checkout (Square)
+The bag's "Checkout securely" button (and "Buy it now") opens `checkout.html` on your own site,
+where customers enter email, phone and shipping address. "Continue to payment" calls
+`api/checkout.js`, which creates a Square payment page for the exact quantity with those details
+already filled in, so customers only add payment there (card, Apple Pay, Google Pay).
+After paying, customers land on `thank-you.html`. Orders, with shipping address, appear in your
+Square Dashboard.
+Prices are set in `api/checkout.js` (PRICES), not in the browser, so they can't be tampered with.
+If you change a price, change it there AND in CONFIG in `index.html`.
+
+Set these in Vercel > Project > Settings > Environment Variables, then redeploy:
+- `SQUARE_ACCESS_TOKEN`  production access token (developer.squareup.com > your app > Credentials)
+- `SQUARE_LOCATION_ID`   developer.squareup.com > your app > Locations
+- `SQUARE_CURRENCY`      `GBP` for a UK Square account, `USD` for a US one
+- `SQUARE_ENVIRONMENT`   optional: `sandbox` while testing with sandbox credentials
+
+A Square account can only charge in its own country's currency. A second account for the other
+market can be added with `SQUARE_US_ACCESS_TOKEN` + `SQUARE_US_LOCATION_ID` (or `SQUARE_UK_...`).
+Without it, checkout for that market shows "isn't available yet".
 
 ## Images
 All 19 product images are in `images/` as WebP, each in three sizes (`-s` 240px, `-m` 640px, `-l` full).

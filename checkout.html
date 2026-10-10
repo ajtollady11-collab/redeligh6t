@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Checkout | AURELI</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F7F2EA">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23000'/><text x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23F7F2EA' text-anchor='middle'>A</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#F7F2EA;--sand:#EEE5D7;--linen:#E2D6C4;--taupe:#8A7A6A;--stone:#5E5247;--ink:#1D1A17;--black:#000;--white:#fff;--error:#8a2f24;
+  --serif:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --sans:"Jost","Futura","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --gutter:clamp(20px,5vw,48px);
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ivory);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--black);outline-offset:3px}
+.sr-only{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.header{border-bottom:1px solid rgba(138,122,106,.18);background:var(--ivory)}
+.header .in{max-width:1120px;margin:0 auto;padding:0 var(--gutter);height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--serif);font-size:22px;letter-spacing:.34em;padding-left:.34em;font-weight:500;text-decoration:none}
+.secure{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--stone)}
+
+.layout{max-width:1120px;margin:0 auto;padding:clamp(24px,5vw,56px) var(--gutter) 80px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:clamp(32px,6vw,80px);align-items:start}
+@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr);gap:24px}}
+
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(32px,4vw,44px);line-height:1.1;margin:0}
+.steps{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--taupe);margin:10px 0 0}
+.steps b{color:var(--ink);font-weight:500}
+fieldset{border:0;padding:0;margin:36px 0 0;min-width:0}
+legend{font-family:var(--serif);font-size:22px;padding:0;margin:0 0 16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.row.stack-s{grid-template-columns:1fr}}
+.field{margin-top:12px;min-width:0}
+.row .field{margin-top:0}
+.row + .field,.field + .row,.row + .row{margin-top:12px}
+label{display:block;font-size:13.5px;color:var(--stone);margin-bottom:6px}
+label .opt{color:var(--taupe)}
+input,select{width:100%;height:52px;padding:0 14px;background:var(--white);border:1px solid rgba(29,26,23,.25);border-radius:2px;font-size:16px;transition:border-color .2s}
+input:hover,select:hover{border-color:rgba(29,26,23,.45)}
+input:focus,select:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)}
+.err{font-size:13px;color:var(--error);margin-top:6px;min-height:0}
+.err:empty{display:none}
+.phone{display:flex}
+.phone span{display:flex;align-items:center;padding:0 12px;border:1px solid rgba(29,26,23,.25);border-right:0;background:var(--sand);font-size:15px;color:var(--stone);border-radius:2px 0 0 2px}
+.phone input{border-radius:0 2px 2px 0}
+.country{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border:1px solid var(--linen);background:var(--sand);color:var(--stone);font-size:15px;border-radius:2px}
+.country a{font-size:13px}
+.hint{font-size:13px;color:var(--taupe);margin-top:6px}
+
+.pay-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:58px;margin-top:32px;border:0;border-radius:2px;background:var(--black);color:var(--ivory);font-size:15.5px;font-weight:500;letter-spacing:.04em;cursor:pointer;transition:background .25s}
+.pay-btn:hover{background:#2a2622}
+.pay-btn[disabled]{opacity:.7;cursor:progress}
+.form-msg{margin-top:14px;font-size:14px;color:var(--error);text-align:center}
+.form-msg[hidden]{display:none}
+.after{margin-top:14px;font-size:13px;color:var(--taupe);text-align:center}
+.back-link{display:inline-block;margin-top:24px;font-size:14px;color:var(--stone)}
+
+/* Summary */
+.summary{background:var(--sand);padding:24px;position:sticky;top:24px}
+@media (max-width:880px){.summary{position:static;order:-1}}
+.summary h2{font-family:var(--serif);font-weight:400;font-size:22px;margin:0 0 8px}
+.toggle{display:none}
+@media (max-width:880px){
+  .summary{padding:0;background:transparent;border-top:1px solid var(--linen);border-bottom:1px solid var(--linen)}
+  .toggle{display:flex;width:100%;justify-content:space-between;align-items:center;background:none;border:0;padding:16px 0;min-height:56px;font-size:15px;cursor:pointer}
+  .toggle .chev{display:inline-block;transition:transform .25s;margin-left:8px}
+  .toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+  .toggle strong{font-family:var(--serif);font-weight:400;font-size:20px}
+  .summary h2{display:none}
+  .sum-body{padding:0 0 18px}
+  .sum-body[hidden]{display:none}
+}
+.line{display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--linen)}
+.line img{width:60px;height:60px;object-fit:cover;display:block;background:var(--linen)}
+.line strong{display:block;font-weight:500;font-size:14.5px;line-height:1.35}
+.line small{color:var(--taupe);font-size:13px}
+.amt{text-align:right;font-size:14.5px;white-space:nowrap}
+.amt s{display:block;color:var(--taupe);font-size:12.5px}
+.free{font-size:12px;letter-spacing:.1em;font-weight:500}
+.qty{display:inline-flex;align-items:center;border:1px solid rgba(29,26,23,.3);height:36px;margin-top:6px;background:var(--white)}
+.qty button{width:34px;height:100%;border:0;background:none;font-size:17px;cursor:pointer}
+.qty output{min-width:22px;text-align:center;font-size:14px}
+.tot{display:flex;justify-content:space-between;font-size:14.5px;margin-top:12px;color:var(--stone)}
+.tot.grand{color:var(--ink);font-size:18px;font-weight:500;margin-top:16px;padding-top:16px;border-top:1px solid var(--linen)}
+.note{font-size:13px;color:var(--stone);margin-top:14px}
+.empty{padding:64px 0;text-align:center}
+.empty a{display:inline-flex;align-items:center;min-height:52px;padding:0 28px;margin-top:20px;background:var(--black);color:var(--ivory);text-decoration:none;font-weight:500}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="in">
+    <a class="logo" href="/" aria-label="AURELI home">AURELI</a>
+    <span class="secure"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4.5" y="10" width="15" height="11" rx="1"/><path d="M8 10V7a4 4 0 018 0v3"/></g></svg>Secure checkout</span>
+  </div>
+</header>
+
+<main id="main">
+  <div class="layout" id="layout">
+    <section aria-labelledby="coTitle">
+      <h1 id="coTitle">Checkout</h1>
+      <p class="steps"><b>1. Delivery details</b><span aria-hidden="true">/</span><span>2. Payment</span></p>
+
+      <form id="form" novalidate>
+        <fieldset>
+          <legend>Contact</legend>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+            <p class="err" id="email-err"></p>
+          </div>
+          <div class="field">
+            <label for="phone">Phone <span class="opt">(for delivery updates)</span></label>
+            <div class="phone"><span id="dial">+44</span><input id="phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" required aria-describedby="dial"></div>
+            <p class="err" id="phone-err"></p>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Shipping address</legend>
+          <div class="field">
+            <label id="countryLabel">Country</label>
+            <div class="country" aria-labelledby="countryLabel"><span id="countryName">United Kingdom</span><a href="/" id="changeCountry">Change</a></div>
+          </div>
+          <div class="row stack-s" style="margin-top:12px">
+            <div class="field">
+              <label for="first">First name</label>
+              <input id="first" name="first" autocomplete="given-name" required>
+              <p class="err" id="first-err"></p>
+            </div>
+            <div class="field">
+              <label for="last">Last name</label>
+              <input id="last" name="last" autocomplete="family-name" required>
+              <p class="err" id="last-err"></p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="line1">Address</label>
+            <input id="line1" name="line1" autocomplete="address-line1" required>
+            <p class="err" id="line1-err"></p>
+          </div>
+          <div class="field">
+            <label for="line2">Flat, suite, etc. <span class="opt">(optional)</span></label>
+            <input id="line2" name="line2" autocomplete="address-line2">
+          </div>
+          <div class="field">
+            <label for="city" id="cityLabel">Town or city</label>
+            <input id="city" name="city" autocomplete="address-level2" required>
+            <p class="err" id="city-err"></p>
+          </div>
+          <div class="row">
+            <div class="field" id="regionField">
+              <label for="region" id="regionLabel">County <span class="opt">(optional)</span></label>
+              <input id="region" name="region" autocomplete="address-level1">
+              <p class="err" id="region-err"></p>
+            </div>
+            <div class="field">
+              <label for="postal" id="postalLabel">Postcode</label>
+              <input id="postal" name="postal" autocomplete="postal-code" required>
+              <p class="err" id="postal-err"></p>
+            </div>
+          </div>
+        </fieldset>
+
+        <button class="pay-btn" id="payBtn" type="submit">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4.5" y="10" width="15" height="11" rx="1"/><path d="M8 10V7a4 4 0 018 0v3"/></g></svg>
+          <span id="payLabel">Continue to payment</span>
+        </button>
+        <p class="form-msg" id="formMsg" role="alert" hidden></p>
+        <p class="after">Next, you'll pay securely with Square by card, Apple Pay or Google Pay. Your details will already be filled in.</p>
+      </form>
+      <a class="back-link" href="/">Back to the shop</a>
+    </section>
+
+    <aside class="summary" aria-label="Order summary">
+      <button class="toggle" id="sumToggle" type="button" aria-expanded="false" aria-controls="sumBody">
+        <span>Show order summary<span class="chev" aria-hidden="true">⌄</span></span>
+        <strong id="totalTop">£49.99</strong>
+      </button>
+      <h2>Your order</h2>
+      <div class="sum-body" id="sumBody">
+        <div class="line">
+          <img src="/images/product-closeup-s.webp" alt="" width="60" height="60">
+          <div>
+            <strong>Aureli™ Skin Therapy Wand</strong>
+            <div class="qty" role="group" aria-label="Quantity">
+              <button type="button" data-q="-1" aria-label="Decrease quantity">−</button>
+              <output id="qty" aria-live="polite">1</output>
+              <button type="button" data-q="1" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+          <div class="amt"><span id="lineTotal">£49.99</span><s id="lineCompare">£79.99</s></div>
+        </div>
+        <div class="line"><img src="/images/gift-jade-s.webp" alt="" width="60" height="60"><div><strong>Black Jade Facial Roller</strong><small>Free gift <span class="gq">× 1</span></small></div><div class="amt"><span class="free">FREE</span></div></div>
+        <div class="line"><img src="/images/gift-ice-s.webp" alt="" width="60" height="60"><div><strong>Black Ice Facial Roller</strong><small>Free gift <span class="gq">× 1</span></small></div><div class="amt"><span class="free">FREE</span></div></div>
+        <div class="line"><img src="/images/gift-guasha-s.webp" alt="" width="60" height="60"><div><strong>Black Gua Sha Facial Tool</strong><small>Free gift <span class="gq">× 1</span></small></div><div class="amt"><span class="free">FREE</span></div></div>
+        <div class="tot"><span>Subtotal</span><span id="subtotal">£49.99</span></div>
+        <div class="tot"><span>Shipping</span><span>FREE</span></div>
+        <div class="tot grand"><span>Total</span><span id="total">£49.99</span></div>
+        <p class="note">Estimated delivery in 5–10 business days. 30-day money-back guarantee.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+/* Display prices must match PRICES in api/checkout.js (the server sets the real charge). */
+const MARKETS = {
+  UK: { locale:"en-GB", currency:"GBP", price:49.99, compare:79.99, country:"GB", countryName:"United Kingdom", dial:"+44",
+        city:"Town or city", region:"County", regionRequired:false, postal:"Postcode" },
+  US: { locale:"en-US", currency:"USD", price:64.99, compare:89.99, country:"US", countryName:"United States", dial:"+1",
+        city:"City", region:"State", regionRequired:true, postal:"ZIP code" }
+};
+const US_STATES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+
+const $ = s => document.querySelector(s);
+const store = {
+  get(a,k){ try { return a.getItem(k); } catch(e){ return null; } },
+  set(a,k,v){ try { a.setItem(k,v); } catch(e){} }
+};
+let LS, SS; try { LS = localStorage; SS = sessionStorage; } catch(e) {}
+
+const params = new URLSearchParams(location.search);
+const marketCode = MARKETS[params.get("m")] ? params.get("m") : (MARKETS[store.get(LS,"aureli-market")] ? store.get(LS,"aureli-market") : "UK");
+const M = MARKETS[marketCode];
+let qty = Math.max(0, Math.min(10, Number(store.get(LS,"aureli-cart")) || 0));
+const fmt = n => new Intl.NumberFormat(M.locale, { style:"currency", currency:M.currency }).format(n);
+
+/* Empty bag: nothing to check out */
+if (!qty) {
+  $("#layout").innerHTML = '<div class="empty" style="grid-column:1/-1"><h1>Your bag is empty</h1><p style="color:var(--stone)">Add the Aureli wand and your 3 free gifts to check out.</p><a href="/#product">Shop the wand</a></div>';
+} else {
+  init();
+}
+
+function init(){
+  document.documentElement.lang = M.locale;
+  $("#countryName").textContent = M.countryName;
+  $("#dial").textContent = M.dial;
+  $("#cityLabel").textContent = M.city;
+  $("#postalLabel").textContent = M.postal;
+  $("#postal").setAttribute("autocomplete","postal-code");
+  if (marketCode === "US") {
+    $("#postal").setAttribute("inputmode","numeric");
+    $("#regionLabel").textContent = "State";
+    const sel = document.createElement("select");
+    sel.id = "region"; sel.name = "region"; sel.required = true; sel.autocomplete = "address-level1";
+    sel.innerHTML = '<option value="">Select</option>' + Object.entries(US_STATES).map(([c,n]) => `<option value="${c}">${n}</option>`).join("");
+    $("#region").replaceWith(sel);
+  }
+  renderSummary();
+  restoreDraft();
+
+  document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => {
+    qty = Math.max(1, Math.min(10, qty + Number(b.dataset.q)));
+    store.set(LS, "aureli-cart", String(qty));
+    renderSummary();
+  }));
+  $("#sumToggle").addEventListener("click", () => {
+    const t = $("#sumToggle"), open = t.getAttribute("aria-expanded") !== "true";
+    t.setAttribute("aria-expanded", String(open));
+    t.firstElementChild.firstChild.textContent = open ? "Hide order summary" : "Show order summary";
+    setBodyVisibility();
+  });
+  matchMedia("(max-width: 880px)").addEventListener("change", setBodyVisibility);
+  setBodyVisibility();
+
+  $("#form").addEventListener("input", saveDraft);
+  $("#form").addEventListener("change", saveDraft);
+  document.querySelectorAll("#form input, #form select").forEach(el => el.addEventListener("blur", () => { if (el.value) validateField(el.id); }));
+  $("#form").addEventListener("submit", submit);
+}
+
+function setBodyVisibility(){
+  const mobile = matchMedia("(max-width: 880px)").matches;
+  $("#sumBody").hidden = mobile && $("#sumToggle").getAttribute("aria-expanded") !== "true";
+}
+
+function renderSummary(){
+  $("#qty").textContent = qty;
+  document.querySelectorAll(".gq").forEach(e => e.textContent = "× " + qty);
+  const t = fmt(M.price * qty);
+  $("#lineTotal").textContent = t;
+  $("#lineCompare").textContent = fmt(M.compare * qty);
+  $("#subtotal").textContent = t; $("#total").textContent = t; $("#totalTop").textContent = t;
+  $("#payLabel").textContent = "Continue to payment";
+}
+
+/* ---------- validation ---------- */
+const val = id => ($("#" + id)?.value || "").trim();
+function normalisePhone(raw){
+  let d = raw.replace(/[^\d+]/g, "");
+  if (marketCode === "UK") {
+    if (d.startsWith("+44")) d = d.slice(3); else if (d.startsWith("0044")) d = d.slice(4);
+    d = d.replace(/^0/, "");
+    return /^\d{9,10}$/.test(d) ? "+44" + d : null;
+  }
+  if (d.startsWith("+1")) d = d.slice(2); else if (d.length === 11 && d.startsWith("1")) d = d.slice(1);
+  return /^[2-9]\d{9}$/.test(d) ? "+1" + d : null;
+}
+const RULES = {
+  email: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "Enter an email address like name@example.com.",
+  phone: v => normalisePhone(v) ? "" : (marketCode === "UK" ? "Enter a UK phone number, like 07700 900123." : "Enter a 10-digit US phone number, like (555) 123-4567."),
+  first: v => v ? "" : "Enter your first name.",
+  last: v => v ? "" : "Enter your last name.",
+  line1: v => v.length >= 3 ? "" : "Enter the first line of your address.",
+  city: v => v ? "" : (marketCode === "UK" ? "Enter your town or city." : "Enter your city."),
+  region: v => (!M.regionRequired || v) ? "" : "Select your state.",
+  postal: v => marketCode === "UK"
+    ? (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(v) ? "" : "Enter a valid UK postcode, like SW1A 1AA.")
+    : (/^\d{5}(-\d{4})?$/.test(v) ? "" : "Enter a 5-digit ZIP code.")
+};
+function validateField(id){
+  if (!RULES[id]) return true;
+  const msg = RULES[id](val(id));
+  const el = $("#" + id), err = $("#" + id + "-err");
+  el.setAttribute("aria-invalid", msg ? "true" : "false");
+  if (msg) el.setAttribute("aria-describedby", id + "-err"); else if (id !== "phone") el.removeAttribute("aria-describedby");
+  if (err) err.textContent = msg;
+  return !msg;
+}
+
+/* ---------- draft (kept only for this browser tab) ---------- */
+const FIELDS = ["email","phone","first","last","line1","line2","city","region","postal"];
+function saveDraft(){ const d = {}; FIELDS.forEach(f => d[f] = val(f)); store.set(SS, "aureli-checkout-" + marketCode, JSON.stringify(d)); }
+function restoreDraft(){
+  try { const d = JSON.parse(store.get(SS, "aureli-checkout-" + marketCode) || "{}"); FIELDS.forEach(f => { if (d[f] && $("#" + f)) $("#" + f).value = d[f]; }); } catch(e) {}
+}
+
+/* ---------- submit ---------- */
+let busy = false;
+async function submit(e){
+  e.preventDefault();
+  if (busy) return;
+  const bad = Object.keys(RULES).filter(id => !validateField(id));
+  const msg = $("#formMsg");
+  if (bad.length) {
+    msg.textContent = bad.length === 1 ? "Check the highlighted field." : "Check the " + bad.length + " highlighted fields.";
+    msg.hidden = false;
+    $("#" + bad[0]).focus();
+    return;
+  }
+  msg.hidden = true;
+  busy = true;
+  const btn = $("#payBtn");
+  btn.disabled = true; btn.setAttribute("aria-busy","true");
+  $("#payLabel").textContent = "Opening secure payment…";
+
+  const postal = marketCode === "UK" ? val("postal").toUpperCase().replace(/\s*(\d[A-Z]{2})$/, " $1") : val("postal");
+  const customer = {
+    email: val("email"), phone: normalisePhone(val("phone")),
+    first_name: val("first"), last_name: val("last"),
+    address_line_1: val("line1"), address_line_2: val("line2"),
+    locality: val("city"), administrative_district_level_1: val("region"),
+    postal_code: postal, country: M.country
+  };
+  try {
+    const r = await fetch("/api/checkout", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ market: marketCode, qty, customer })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.url) { window.location.href = data.url; return; }
+    msg.textContent = data.message || "We couldn't open payment. Please try again.";
+  } catch (err) {
+    msg.textContent = "We couldn't reach payment. Check your connection and try again.";
+  }
+  msg.hidden = false;
+  busy = false; btn.disabled = false; btn.removeAttribute("aria-busy");
+  $("#payLabel").textContent = "Continue to payment";
+}
+</script>
+</body>
+</html>
