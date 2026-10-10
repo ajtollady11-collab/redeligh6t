@@ -142,7 +142,7 @@ p{margin:0}
    ========================================================= */
 .product{padding:clamp(16px,3vw,40px) 0 clamp(56px,8vw,96px)}
 .product .wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(32px,5vw,72px);align-items:start}
-@media (max-width:900px){.product .wrap{grid-template-columns:1fr;gap:24px;padding:0}}
+@media (max-width:900px){.product .wrap{grid-template-columns:minmax(0,1fr);gap:24px;padding:0}}
 
 /* Gallery */
 .gallery{position:sticky;top:92px}
@@ -171,7 +171,9 @@ p{margin:0}
 /* Buy box */
 .buy{padding-top:8px}
 @media (max-width:900px){.buy{padding:0 var(--gutter)}}
-.rating{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--stone);text-decoration:none}
+.rating{display:inline-flex;align-items:center;gap:10px;font-size:13.5px;color:var(--stone);text-decoration:none;min-height:24px}
+.rating-count{text-decoration:underline;text-decoration-color:rgba(94,82,71,.4);text-underline-offset:3px;transition:color .2s,text-decoration-color .2s}
+.rating:hover .rating-count{color:var(--ink);text-decoration-color:currentColor}
 .stars{display:inline-flex;gap:2px;color:var(--black)}
 .ph-chip{font-size:11px;letter-spacing:.06em;color:var(--taupe);border:1px dashed var(--taupe);padding:2px 7px}
 .buy h1{font-size:clamp(32px,3.6vw,46px);margin-top:14px}
@@ -226,6 +228,7 @@ p{margin:0}
 .acc[open] summary .pm::after{transform:rotate(0)}
 .acc .acc-body{padding:0 0 20px;color:var(--stone);font-size:15px;font-weight:300;max-width:62ch}
 .acc .acc-body ul{margin:8px 0 0;padding-left:18px}
+.acc .acc-body p + p{margin-top:10px}
 .acc .acc-body li{margin:4px 0}
 .buy .accs{margin-top:8px}
 
@@ -358,9 +361,15 @@ p{margin:0}
    Reviews
    ========================================================= */
 .rev-summary{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:24px 0;border-top:1px solid var(--linen);border-bottom:1px solid var(--linen);margin-bottom:32px}
-.rev-score{font-family:var(--serif);font-size:56px;line-height:1}
+.rev-total{color:var(--stone);font-size:15px}
+.rev-empty{color:var(--stone);font-weight:300;font-size:15px;max-width:52ch}
+.rev-empty[hidden]{display:none}
+.rev-more{display:flex;justify-content:center;margin-top:16px}
+.rev-more[hidden]{display:none}
+.review .media > img{position:static;height:auto}
+.review time{white-space:nowrap}
 .rev-grid{columns:3 280px;column-gap:20px}
-.review{break-inside:avoid;background:var(--ivory);margin:0 0 20px;padding:22px}
+.review{break-inside:avoid;background:var(--sand);margin:0 0 20px;padding:22px}
 .review .media{margin:-22px -22px 18px}
 .review h3{font-family:var(--sans);font-size:16px;font-weight:500;letter-spacing:0;margin-top:12px}
 .review p{color:var(--stone);font-weight:300;font-size:15px;margin-top:6px}
@@ -578,11 +587,10 @@ p{margin:0}
 
     <!-- Buy box -->
     <div class="buy">
-      <!-- 5. Rating / social proof (placeholder until real reviews exist) -->
-      <a class="rating reveal" href="#reviews">
+      <!-- 5. Rating / social proof: imported review total from previous store -->
+      <a class="rating reveal" href="#reviews" aria-label="Read our 1,300+ customer reviews">
         <span class="stars" aria-hidden="true"><svg width="15" height="15"><use href="#i-star"/></svg><svg width="15" height="15"><use href="#i-star"/></svg><svg width="15" height="15"><use href="#i-star"/></svg><svg width="15" height="15"><use href="#i-star"/></svg><svg width="15" height="15"><use href="#i-star"/></svg></span>
-        <span>[X.X] ([000] reviews)</span>
-        <span class="ph-chip">PLACEHOLDER</span>
+        <span class="rating-count">1,300+ reviews</span>
       </a>
 
       <h1 class="reveal d1">Aureli™ Skin Therapy Wand</h1>
@@ -594,7 +602,7 @@ p{margin:0}
         <s class="compare" data-p="compare">£79.99</s>
         <span class="save">SAVE <span data-p="save">£30.00</span></span>
       </div>
-      <p class="ship-line reveal d2"><span data-market-text="shippingShort">Free UK shipping</span>. 3 free gifts included.</p>
+      <p class="ship-line reveal d2"><span data-market-text="shippingShort">Free UK shipping</span>. 3 free gifts included.<br>Estimated delivery in 5–10 business days.</p>
 
       <ul class="ticks reveal d3">
         <li><svg width="16" height="16"><use href="#i-check"/></svg>Three LED light modes for different skin moods</li>
@@ -648,7 +656,7 @@ p{margin:0}
       <!-- 9. Trust -->
       <div class="trust">
         <div><svg width="24" height="24"><use href="#i-shield"/></svg><span><span data-guarantee-days>30</span>-day money-back guarantee</span></div>
-        <div><svg width="24" height="24"><use href="#i-truck"/></svg><span>Free tracked shipping</span></div>
+        <div><svg width="24" height="24"><use href="#i-truck"/></svg><span>Free shipping, 5–10 business days</span></div>
         <div><svg width="24" height="24"><use href="#i-lock"/></svg><span>Secure checkout</span></div>
       </div>
 
@@ -670,7 +678,12 @@ p{margin:0}
         </details>
         <details class="acc">
           <summary>Shipping &amp; returns <span class="pm" aria-hidden="true"></span></summary>
-          <div class="acc-body">Free tracked shipping on every order. Orders are processed within [X] business days. Estimated delivery: UK [X–X] business days, US [X–X] business days. Every wand is covered by our <span data-guarantee-days>30</span>-day money-back guarantee.</div>
+          <div class="acc-body">
+            <p>Shipping is free on every order.</p>
+            <p>Orders are processed within 1–2 business days. Once dispatched, estimated shipping times are 4–8 business days for both the United Kingdom and the United States.</p>
+            <p>Estimated total delivery time is 5–10 business days, including processing. Delivery times are estimates and may occasionally vary. Tracking information will be provided when available.</p>
+            <p>Every wand is covered by our <span data-guarantee-days>30</span>-day money-back guarantee. <a href="/shipping.html">Read our full shipping policy</a>.</p>
+          </div>
         </details>
         <details class="acc">
           <summary>Safety <span class="pm" aria-hidden="true"></span></summary>
@@ -888,21 +901,13 @@ p{margin:0}
       <h2 id="revTitle">What people are saying</h2>
     </div>
     <div class="rev-summary">
-      <span class="rev-score">[X.X]</span>
-      <div>
-        <span class="stars" aria-hidden="true"><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg></span>
-        <p style="color:var(--stone);font-size:14px;margin-top:4px">Based on [000] reviews</p>
-      </div>
-      <span class="ph-chip">PLACEHOLDER: connect your reviews app (e.g. Judge.me, Loox, Okendo)</span>
+      <span class="stars" aria-hidden="true"><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg><svg width="18" height="18"><use href="#i-star"/></svg></span>
+      <p class="rev-total">Based on 1,300+ customer reviews</p>
     </div>
-    <div class="rev-grid">
-      <article class="review" style="background:var(--sand)"><div class="media r-45"><div class="ph"><span class="ph-label">[CUSTOMER PHOTO]</span></div></div><span class="placeholder-flag">PLACEHOLDER REVIEW</span><span class="stars" aria-label="5 out of 5"><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg></span><h3>[Review headline]</h3><p>[Replace with a real customer review. Keep it in their own words.]</p><footer><span>[Customer name]</span><span>[Date]</span></footer></article>
-      <article class="review" style="background:var(--sand)"><span class="placeholder-flag">PLACEHOLDER REVIEW</span><span class="stars" aria-label="5 out of 5"><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg></span><h3>[Review headline]</h3><p>[Replace with a real customer review.]</p><footer><span>[Customer name]</span><span>[Date]</span></footer></article>
-      <article class="review" style="background:var(--sand)"><div class="media r-1"><div class="ph"><span class="ph-label">[CUSTOMER PHOTO]</span></div></div><span class="placeholder-flag">PLACEHOLDER REVIEW</span><span class="stars" aria-label="5 out of 5"><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg></span><h3>[Review headline]</h3><p>[Replace with a real customer review. Longer reviews sit naturally in this masonry layout.]</p><footer><span>[Customer name]</span><span>[Date]</span></footer></article>
-      <article class="review" style="background:var(--sand)"><span class="placeholder-flag">PLACEHOLDER REVIEW</span><span class="stars" aria-label="5 out of 5"><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg></span><h3>[Review headline]</h3><p>[Replace with a real customer review.]</p><footer><span>[Customer name]</span><span>[Date]</span></footer></article>
-      <article class="review" style="background:var(--sand)"><div class="media r-45"><div class="ph"><span class="ph-label">[CUSTOMER PHOTO]</span></div></div><span class="placeholder-flag">PLACEHOLDER REVIEW</span><span class="stars" aria-label="5 out of 5"><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg></span><h3>[Review headline]</h3><p>[Replace with a real customer review.]</p><footer><span>[Customer name]</span><span>[Date]</span></footer></article>
-      <article class="review" style="background:var(--sand)"><span class="placeholder-flag">PLACEHOLDER REVIEW</span><span class="stars" aria-label="5 out of 5"><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg><svg width="14" height="14"><use href="#i-star"/></svg></span><h3>[Review headline]</h3><p>[Replace with a real customer review.]</p><footer><span>[Customer name]</span><span>[Date]</span></footer></article>
-    </div>
+    <!-- Imported reviews render here from /reviews.json (format in README). -->
+    <div class="rev-grid" id="revGrid" aria-live="polite"></div>
+    <p class="rev-empty" id="revEmpty">Our customer reviews are being transferred from our previous store and will appear here shortly.</p>
+    <div class="rev-more" id="revMoreWrap" hidden><button class="btn ghost" type="button" id="revMore">Show more reviews</button></div>
   </div>
 </section>
 
@@ -917,7 +922,7 @@ p{margin:0}
       <details class="acc"><summary>Does the microcurrent hurt? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">It shouldn't. Most people feel a light tingle. Start on the lowest intensity and only increase if it feels comfortable. Always use it with a serum or gel, never on dry skin.</div></details>
       <details class="acc"><summary>Is it suitable for everyone? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Not everyone. Please don't use it if you're pregnant, have a pacemaker or another implanted electronic device, have epilepsy, or have broken or irritated skin. Avoid the eye area. If you have a medical condition or are unsure, speak to your doctor before use.</div></details>
       <details class="acc"><summary>Are the 3 free gifts really free? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Yes. The Black Jade Facial Roller, Black Ice Facial Roller and Black Gua Sha Facial Tool are added to every wand order at no extra cost. Order two wands and you get two sets.</div></details>
-      <details class="acc"><summary>How long does delivery take? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Shipping is free on every order. UK delivery takes [X–X] business days and US delivery takes [X–X] business days. You'll receive tracking as soon as your order ships.</div></details>
+      <details class="acc"><summary>How long does delivery take? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body"><p>Orders are processed within 1–2 business days. Once dispatched, estimated shipping times are 4–8 business days for both the United Kingdom and the United States.</p><p>Estimated total delivery time is 5–10 business days, including processing. Delivery times are estimates and may occasionally vary. Tracking information will be provided when available. Shipping is free on every order.</p></div></details>
       <details class="acc"><summary>What if it's not for me? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">You're covered by our <span data-guarantee-days>30</span>-day money-back guarantee. If you're not happy, contact us within <span data-guarantee-days>30</span> days of delivery and we'll arrange a refund. See our returns policy for full details.</div></details>
       <details class="acc"><summary>Can I use it beyond my face? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Aureli is designed for the face and neck. Some people enjoy a gentle massage elsewhere as part of a wider self-care routine. Always follow the instruction guide, start on the lowest setting and avoid broken or irritated skin.</div></details>
       <details class="acc"><summary>How do I charge it? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Use the included charging cable. [Confirm charging type and battery life with your supplier and add them here.]</div></details>
@@ -959,7 +964,7 @@ p{margin:0}
         <li><svg width="16" height="16"><use href="#i-gift"/></svg>Free gift 01: Black Jade Facial Roller</li>
         <li><svg width="16" height="16"><use href="#i-gift"/></svg>Free gift 02: Black Ice Facial Roller</li>
         <li><svg width="16" height="16"><use href="#i-gift"/></svg>Free gift 03: Black Gua Sha Facial Tool</li>
-        <li><svg width="16" height="16"><use href="#i-truck"/></svg>Free shipping</li>
+        <li><svg width="16" height="16"><use href="#i-truck"/></svg>Free shipping, estimated delivery in 5–10 business days</li>
         <li><svg width="16" height="16"><use href="#i-shield"/></svg><span><span data-guarantee-days>30</span>-day money-back guarantee</span></li>
       </ul>
       <button class="btn block" type="button" data-add>Add to bag <span class="sep" aria-hidden="true"></span> <span data-p="price">£49.99</span></button>
@@ -990,7 +995,7 @@ p{margin:0}
       </div>
       <div>
         <h4>Help</h4>
-        <ul><li><a href="#faq">FAQ</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns &amp; refunds</a></li><li><a href="#">Track your order</a></li><li><a href="mailto:hello@aureli.com">Contact us</a></li></ul>
+        <ul><li><a href="#faq">FAQ</a></li><li><a href="/shipping.html">Shipping policy</a></li><li><a href="#">Returns &amp; refunds</a></li><li><a href="#">Track your order</a></li><li><a href="mailto:hello@aureli.com">Contact us</a></li></ul>
       </div>
       <div>
         <h4>Legal</h4>
@@ -1032,6 +1037,7 @@ p{margin:0}
   <div class="drawer-foot" id="drawerFoot">
     <div class="tot"><span>Gifts</span><span>FREE</span></div>
     <div class="tot"><span>Shipping</span><span>FREE</span></div>
+    <div class="tot" style="color:var(--stone);font-size:13.5px"><span>Estimated delivery</span><span>5–10 business days</span></div>
     <div class="tot grand"><span>Total</span><span id="cartTotal">£49.99</span></div>
     <button class="btn block" id="checkoutBtn" type="button"><svg width="16" height="16"><use href="#i-lock"/></svg> Checkout securely</button>
     <p class="checkout-msg" id="checkoutMsg" role="alert" hidden></p>
@@ -1332,6 +1338,41 @@ $("#newsForm").addEventListener("submit", e => {
   msg.textContent = "You're on the list.";
   input.value = "";
 });
+
+/* ---------- imported reviews (from /reviews.json) ---------- */
+(() => {
+  const grid = $("#revGrid"), empty = $("#revEmpty"), moreWrap = $("#revMoreWrap"), more = $("#revMore");
+  const PAGE = 12;
+  let all = [], shown = 0;
+  const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]);
+  const star = '<svg width="14" height="14"><use href="#i-star"/></svg>';
+  const fmtDate = d => { const t = new Date(d); return isNaN(t) ? esc(d) : t.toLocaleDateString(document.documentElement.lang, { day:"numeric", month:"short", year:"numeric" }); };
+  const card = r => {
+    const n = Math.max(0, Math.min(5, Math.round(Number(r.rating) || 0)));
+    return `<article class="review">
+      ${r.photo ? `<div class="media"><img src="${esc(r.photo)}" alt="Photo from ${esc(r.name)}" loading="lazy" decoding="async"></div>` : ""}
+      <span class="stars" role="img" aria-label="${n} out of 5 stars">${star.repeat(n)}</span>
+      ${r.title ? `<h3>${esc(r.title)}</h3>` : ""}
+      <p>${esc(r.body)}</p>
+      <footer><span>${esc(r.name)}</span>${r.date ? `<time datetime="${esc(r.date)}">${fmtDate(r.date)}</time>` : ""}</footer>
+    </article>`;
+  };
+  const page = () => {
+    grid.insertAdjacentHTML("beforeend", all.slice(shown, shown + PAGE).map(card).join(""));
+    shown = Math.min(all.length, shown + PAGE);
+    moreWrap.hidden = shown >= all.length;
+  };
+  more.addEventListener("click", page);
+  fetch("/reviews.json", { cache: "no-cache" })
+    .then(r => r.ok ? r.json() : [])
+    .then(data => {
+      all = (Array.isArray(data) ? data : []).filter(r => r && r.body);
+      if (!all.length) return;
+      empty.hidden = true;
+      page();
+    })
+    .catch(() => {});
+})();
 
 initMarket();
 renderCart();

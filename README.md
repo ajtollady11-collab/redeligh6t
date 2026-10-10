@@ -49,11 +49,22 @@ The ratio class (`r-1`, `r-45`, `r-916`, `r-43`) keeps the layout identical once
 Use `loading="eager"` (not lazy) on the first hero image.
 
 ## Before launch, fill in / confirm
-- Real reviews (search the page for `PLACEHOLDER`), or connect a reviews app
-- Delivery times (search `[X–X]`) and processing time
 - Charging type and battery life (FAQ)
 - LED colours: page assumes red, blue and amber. Change in the `modes` list in the script if different
 - Guarantee length (`guaranteeDays`, currently 30)
 - Safety wording against your supplier's instruction manual
 - Footer links: shipping, returns, privacy, terms, contact email
 - Newsletter: connect the form to Klaviyo or Mailchimp
+
+## Shipping
+Processing 1–2 business days, shipping 4–8 business days (UK and US), total 5–10 business days.
+Shown in: price area, trust row, Shipping & returns dropdown, FAQ, final CTA, cart, and `shipping.html` (footer link).
+
+## Reviews (imported from your previous store)
+The 1,300+ count is written into `index.html` (search `1,300+`). Update it there if the number changes.
+Imported reviews go in `reviews.json` at the top level of the repo. Each review looks like:
+```json
+{ "name": "Sarah M.", "rating": 5, "title": "Optional headline", "body": "Review text", "date": "2026-09-01", "photo": "/images/reviews/sarah.jpg" }
+```
+`title` and `photo` are optional. The page shows 12 at a time with a "Show more reviews" button.
+While `reviews.json` is empty (`[]`), the section shows a short "being transferred" note instead.
