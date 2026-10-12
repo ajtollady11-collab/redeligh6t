@@ -8,18 +8,16 @@
 // Needs in Vercel > Settings > Environment Variables (then redeploy):
 //   DASHBOARD_PASSWORD     the dashboard password (12+ characters)
 //   SQUARE_ACCESS_TOKEN, SQUARE_LOCATION_ID      (already set up for checkout)
-//   KV_REST_API_URL, KV_REST_API_TOKEN           added automatically when you connect
-//                                                Upstash Redis in Vercel > Storage
-//                                                (UPSTASH_REDIS_REST_URL / _TOKEN also work)
 //
-// Orders and customer details are read live from Square. Ticks, tracking and notes are kept in
-// Redis, because Square locks an order once it's completed and you couldn't change it afterwards.
+// Orders and customer details are read live from Square. Ticks, tracking and notes are saved
+// as small notes (metadata) on the Square order itself, so no extra database is needed.
+// The order is left "open" in Square on purpose: Square locks completed orders, and you
+// couldn't untick them or add tracking afterwards.
 
 const crypto = require("crypto");
 
 const COOKIE = "aureli_admin";
 const SESSION_HOURS = 12;
-const STORE_KEY = "aureli:fulfilment";
 const SQUARE_VERSION = "2024-07-17";
 
 const cfg = () => ({
@@ -28,8 +26,6 @@ const cfg = () => ({
   location: (process.env.SQUARE_LOCATION_ID || "").trim(),
   api: (process.env.SQUARE_ENVIRONMENT || "production").trim().toLowerCase() === "sandbox"
     ? "https://connect.squareupsandbox.com" : "https://connect.squareup.com",
-  kvUrl: (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "").trim().replace(/\/$/, ""),
-  kvToken: (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "").trim()
 });
 
 /* ---------------- sessions ---------------- */
@@ -67,30 +63,10 @@ function passwordMatches(c, attempt) {
   return crypto.timingSafeEqual(a, b);
 }
 
-/* ---------------- storage (Upstash Redis REST) ---------------- */
-async function kv(c, command) {
-  const r = await fetch(c.kvUrl, {
-    method: "POST",
-    headers: { Authorization: "Bearer " + c.kvToken, "Content-Type": "application/json" },
-    body: JSON.stringify(command)
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok || data.error) throw new Error("Storage error: " + (data.error || r.status));
-  return data.result;
-}
-async function loadFulfilment(c) {
-  const flat = (await kv(c, ["HGETALL", STORE_KEY])) || [];
-  const out = {};
-  for (let i = 0; i < flat.length; i += 2) {
-    try { out[flat[i]] = JSON.parse(flat[i + 1]); } catch (e) {}
-  }
-  return out;
-}
-
 /* ---------------- Square ---------------- */
-async function square(c, path, body) {
+async function square(c, path, body, method) {
   const r = await fetch(c.api + path, {
-    method: body ? "POST" : "GET",
+    method: method || (body ? "POST" : "GET"),
     headers: { Authorization: "Bearer " + c.token, "Content-Type": "application/json", "Square-Version": SQUARE_VERSION },
     body: body ? JSON.stringify(body) : undefined
   });
@@ -127,7 +103,35 @@ async function fetchOrders(c) {
 
 const money = m => (m ? { amount: m.amount, currency: m.currency } : null);
 
-function shape(o, saved) {
+/* Fulfilment notes live in the order's metadata. Each value is stored as JSON so an empty
+   value is still a valid (non-empty) Square metadata string. Square allows 255 characters per value. */
+const MK = { status: "aureli_status", link: "aureli_link", note: "aureli_note" };
+const parse = v => { try { return JSON.parse(v); } catch (e) { return undefined; } };
+function readFulfilment(meta) {
+  const st = parse(meta[MK.status]) || {};
+  return {
+    fulfilled_at: st.f || null,
+    carrier: st.c || "",
+    tracking: st.t || "",
+    updated_at: st.u || null,
+    tracking_url: parse(meta[MK.link]) || "",
+    note: parse(meta[MK.note]) || ""
+  };
+}
+function fitJSON(text) { // longest JSON string of `text` that fits in 255 characters
+  let t = String(text || "");
+  while (JSON.stringify(t).length > 255) t = t.slice(0, -1);
+  return JSON.stringify(t);
+}
+function writeFulfilment(f) {
+  return {
+    [MK.status]: JSON.stringify({ f: f.fulfilled_at || null, c: f.carrier.slice(0, 40), t: f.tracking.slice(0, 60), u: f.updated_at }),
+    [MK.link]: fitJSON(f.tracking_url),
+    [MK.note]: fitJSON(f.note)
+  };
+}
+
+function shape(o) {
   const f = (o.fulfillments || []).find(x => x.type === "SHIPMENT") || {};
   const sd = f.shipment_details || {};
   const rec = sd.recipient || {};
@@ -140,6 +144,7 @@ function shape(o, saved) {
     created_at: o.created_at,
     state: o.state,
     market: meta.market || (a.country === "US" ? "US" : "UK"),
+    country: a.country || meta.country || "",
     total: money(o.total_money),
     refunded,
     items: (o.line_items || []).map(li => ({ name: li.name, quantity: Number(li.quantity) || 1, note: li.note || "" })),
@@ -157,7 +162,8 @@ function shape(o, saved) {
       country: a.country || ""
     },
     shipping_note: sd.shipping_note || "",
-    fulfilment: saved[o.id] || {}
+    fulfilment: readFulfilment(meta),
+    locked: o.state === "COMPLETED"
   };
 }
 
@@ -196,38 +202,47 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ error: "auth", message: "Please sign in." });
     }
 
-    const storageReady = !!(c.kvUrl && c.kvToken);
-
     if (req.method === "GET") {
       if (!c.token || !c.location) {
         return res.status(503).json({ error: "setup", message: "Square isn't connected. Add SQUARE_ACCESS_TOKEN and SQUARE_LOCATION_ID in Vercel." });
       }
-      const [orders, saved] = await Promise.all([
-        fetchOrders(c),
-        storageReady ? loadFulfilment(c).catch(() => ({})) : Promise.resolve({})
-      ]);
-      return res.status(200).json({ storage: storageReady, orders: orders.map(o => shape(o, saved)) });
+      const orders = await fetchOrders(c);
+      return res.status(200).json({ storage: true, orders: orders.map(shape) });
     }
 
     if (req.method === "POST" && body.action === "update") {
-      if (!storageReady) {
-        return res.status(503).json({ error: "storage", message: "Connect storage first: Vercel > Storage > Upstash Redis, then redeploy." });
-      }
       const id = clean(body.id, 64);
       if (!/^[A-Za-z0-9_-]{6,64}$/.test(id)) return res.status(400).json({ error: "id", message: "Unknown order." });
-      const existing = (await loadFulfilment(c))[id] || {};
-      const next = {
-        fulfilled_at: body.fulfilled === true ? (existing.fulfilled_at || new Date().toISOString())
-                    : body.fulfilled === false ? null : (existing.fulfilled_at || null),
-        carrier: "carrier" in body ? clean(body.carrier, 40) : (existing.carrier || ""),
-        tracking: "tracking" in body ? clean(body.tracking, 60) : (existing.tracking || ""),
-        tracking_url: "tracking_url" in body ? clean(body.tracking_url, 300) : (existing.tracking_url || ""),
-        note: "note" in body ? clean(body.note, 1000) : (existing.note || ""),
-        updated_at: new Date().toISOString()
-      };
-      if (next.tracking_url && !/^https?:\/\//i.test(next.tracking_url)) next.tracking_url = "https://" + next.tracking_url;
-      await kv(c, ["HSET", STORE_KEY, id, JSON.stringify(next)]);
-      return res.status(200).json({ ok: true, fulfilment: next });
+      // Read the latest version of the order, then save. Retry once if it changed in between.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const { order } = await square(c, "/v2/orders/" + encodeURIComponent(id));
+        if (!order || order.location_id !== c.location) return res.status(404).json({ error: "id", message: "Order not found." });
+        if (order.state === "COMPLETED" || order.state === "CANCELED") {
+          return res.status(409).json({ error: "locked", message: "This order was " + order.state.toLowerCase() + " in Square, so it can't be changed here." });
+        }
+        const meta = order.metadata || {};
+        const existing = readFulfilment(meta);
+        const next = {
+          fulfilled_at: body.fulfilled === true ? (existing.fulfilled_at || new Date().toISOString())
+                      : body.fulfilled === false ? null : existing.fulfilled_at,
+          carrier: "carrier" in body ? clean(body.carrier, 40) : existing.carrier,
+          tracking: "tracking" in body ? clean(body.tracking, 60) : existing.tracking,
+          tracking_url: "tracking_url" in body ? clean(body.tracking_url, 250) : existing.tracking_url,
+          note: "note" in body ? clean(body.note, 250) : existing.note,
+          updated_at: new Date().toISOString()
+        };
+        if (next.tracking_url && !/^https?:\/\//i.test(next.tracking_url)) next.tracking_url = "https://" + next.tracking_url;
+        try {
+          await square(c, "/v2/orders/" + encodeURIComponent(id), {
+            idempotency_key: crypto.randomUUID(),
+            order: { location_id: c.location, version: order.version, metadata: Object.assign({}, meta, writeFulfilment(next)) }
+          }, "PUT");
+          return res.status(200).json({ ok: true, fulfilment: readFulfilment(writeFulfilment(next)) });
+        } catch (err) {
+          if (attempt === 0 && /version/i.test(err.message)) continue; // someone else saved; try again
+          throw err;
+        }
+      }
     }
 
     return res.status(405).json({ error: "method", message: "Not allowed." });

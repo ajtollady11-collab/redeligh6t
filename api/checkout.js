@@ -2,6 +2,7 @@
 //
 //   POST /api/checkout                 -> creates a Square payment page for the bag, returns { url }
 //   GET  /api/checkout?market=US       -> what the customer will actually be charged per unit
+//   GET  /api/checkout?rates=1         -> today's exchange rates from GBP (for showing other currencies)
 //   GET  /api/checkout?check=1         -> setup self-check (never shows your token)
 //
 // Set these in Vercel > Project > Settings > Environment Variables, then redeploy:
@@ -60,6 +61,19 @@ async function rate(from, to) {
   return key === "USD:GBP" ? usdGbp : key === "GBP:USD" ? 1 / usdGbp : 1;
 }
 
+// All rates from GBP in one call, for showing prices in other currencies. Display only:
+// customers paying in any currency other than USD are charged the GBP price.
+let ratesCache = null;
+async function allRates() {
+  if (ratesCache && Date.now() - ratesCache.at < SIX_HOURS) return ratesCache.data;
+  const data = await fetchJSON("https://api.frankfurter.dev/v1/latest?base=GBP")
+            || await fetchJSON("https://api.frankfurter.app/latest?from=GBP");
+  if (!data || !data.rates) return null;
+  const out = { base: "GBP", date: data.date, rates: data.rates };
+  ratesCache = { data: out, at: Date.now() };
+  return out;
+}
+
 async function quote(market) {
   const shown = PRICES[market];
   const charge = env().currency;
@@ -74,8 +88,17 @@ async function quote(market) {
 }
 
 /* ---------------- customer details for pre-filling Square ---------------- */
+// Countries we don't sell to (comprehensive UK/US sanctions or carriers can't deliver).
+const BLOCKED = new Set(["CU", "IR", "KP", "SY", "RU", "BY"]);
+const countryOf = input => {
+  const c = typeof (input && input.country) === "string" ? input.country.trim().toUpperCase() : "";
+  return /^[A-Z]{2}$/.test(c) && !BLOCKED.has(c) ? c : null;
+};
+
 function cleanCustomer(input, market) {
   if (!input || typeof input !== "object") return null;
+  const country = countryOf(input);
+  if (!country) return null;
   const t = (v, max = 120) => (typeof v === "string" ? v.trim().slice(0, max) : "");
   const email = t(input.email, 254);
   const phone = t(input.phone, 20);
@@ -87,14 +110,17 @@ function cleanCustomer(input, market) {
     locality: t(input.locality, 80),
     administrative_district_level_1: t(input.administrative_district_level_1, 80),
     postal_code: t(input.postal_code, 12),
-    country: market === "UK" ? "GB" : "US"
+    country
   };
   for (const k of Object.keys(address)) if (!address[k]) delete address[k];
   const data = {};
   if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) data.buyer_email = email;
-  const phoneOk = market === "UK" ? /^\+44\d{9,10}$/.test(phone) : /^\+1[2-9]\d{9}$/.test(phone);
+  const phoneOk = country === "GB" ? /^\+44\d{9,10}$/.test(phone)
+                : country === "US" ? /^\+1[2-9]\d{9}$/.test(phone)
+                : /^\+[1-9]\d{7,14}$/.test(phone);
   if (phoneOk) data.buyer_phone_number = phone;
-  if (address.address_line_1 && address.locality && address.postal_code) data.buyer_address = address;
+  const needsPostcode = country === "GB" || country === "US";
+  if (address.address_line_1 && address.locality && (address.postal_code || !needsPostcode)) data.buyer_address = address;
   return Object.keys(data).length ? data : null;
 }
 
@@ -178,6 +204,12 @@ module.exports = async function handler(req, res) {
 
     if (req.method === "GET") {
       if (q.check) return res.status(200).json(await selfCheck());
+      if (q.rates) {
+        const r = await allRates();
+        if (!r) return res.status(503).json({ error: "rates", message: "Exchange rates unavailable." });
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        return res.status(200).json(r);
+      }
       if (!PRICES[q.market]) return res.status(400).json({ error: "Invalid market." });
       return res.status(200).json(await quote(q.market));
     }
@@ -188,7 +220,12 @@ module.exports = async function handler(req, res) {
     }
 
     const body = readBody(req);
+    // "market" is the price list: US = $64.99 (charged as the GBP equivalent), UK = £49.99 for everyone else.
     const market = body.market === "US" ? "US" : body.market === "UK" ? "UK" : null;
+    const shipCountry = body.customer && body.customer.country ? countryOf(body.customer) : "unknown";
+    if (!shipCountry) {
+      return res.status(400).json({ error: "country", message: "Sorry, we can't deliver to that country." });
+    }
     const qty = Number.parseInt(body.qty, 10);
     if (!market || !Number.isInteger(qty) || qty < 1 || qty > 10) {
       return res.status(400).json({ error: "invalid", message: "Something's not right with your bag. Go back to the shop and try again." });
@@ -210,7 +247,9 @@ module.exports = async function handler(req, res) {
       order: {
         location_id: e.location,
         reference_id: "AUR-" + randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase(),
-        metadata: { market },
+        metadata: Object.assign({ market },
+          shipCountry !== "unknown" ? { country: shipCountry } : {},
+          typeof body.currency === "string" && /^[A-Z]{3}$/.test(body.currency) ? { currency_shown: body.currency } : {}),
         line_items: [{
           name: PRODUCT_NAME,
           quantity: String(qty),
