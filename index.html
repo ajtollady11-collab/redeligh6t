@@ -316,18 +316,18 @@ p{margin:0}
 /* =========================================================
    UGC
    ========================================================= */
-.ugc-track{scroll-padding-inline:var(--gutter);display:grid;grid-auto-flow:column;grid-auto-columns:clamp(220px,24vw,290px);gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 var(--gutter) 8px;margin:0 calc(-1 * var(--gutter));scrollbar-width:thin}
-@media (min-width:1240px){.ugc-track{margin:0;padding:0 0 8px}}
+.ugc-track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,20px);max-width:1000px}
+@media (max-width:700px){.ugc-track{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:72%;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 calc(-1 * var(--gutter));padding:0 var(--gutter) 6px;scroll-padding-inline:var(--gutter)}}
 .ugc{scroll-snap-align:start}
-.ugc .play{position:relative;width:56px;height:56px;border-radius:50%;border:1px solid rgba(247,242,234,.6);display:flex;align-items:center;justify-content:center}
-.ugc-cap{margin-top:14px}
-.ugc-cap p{font-size:15px;line-height:1.5}
-.ugc-cap small{display:block;margin-top:8px;color:var(--taupe);font-size:13px}
-.track-nav{display:flex;gap:8px}
-.track-nav button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(29,26,23,.35);background:none;display:flex;align-items:center;justify-content:center}
+.ugc .media{background:#171411}
+.ugc video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.vid-toggle{position:absolute;right:12px;top:12px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:var(--ivory);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+.vid-toggle:hover{background:rgba(0,0,0,.75)}
+.vid-toggle .i-pause{display:none}
+.vid-toggle[data-playing="true"] .i-pause{display:block}
+.vid-toggle[data-playing="true"] .i-play{display:none}
 .row-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:clamp(32px,5vw,56px)}
 .row-head .head{margin:0}
-@media (max-width:700px){.track-nav{display:none}}
 
 /* =========================================================
    3 FREE GIFTS offer section
@@ -824,31 +824,37 @@ p{margin:0}
   </div>
 </section>
 
-<!-- 15. Lifestyle / UGC -->
+<!-- 15. Brand videos -->
 <section class="section" aria-labelledby="ugcTitle">
   <div class="wrap">
-    <div class="row-head">
-      <div class="head">
-        <h2 id="ugcTitle">In real routines</h2>
-        <p class="lede" style="margin-top:18px">How people are fitting Aureli into their mornings and evenings.</p>
-      </div>
-      <div class="track-nav">
-        <button aria-label="Scroll videos left" data-track="-1"><svg width="18" height="18"><use href="#i-left"/></svg></button>
-        <button aria-label="Scroll videos right" data-track="1"><svg width="18" height="18"><use href="#i-right"/></svg></button>
-      </div>
+    <div class="head">
+      <h2 id="ugcTitle">See the ritual in motion</h2>
+      <p class="lede" style="margin-top:18px">Short brand videos showing how Aureli fits into a morning or evening routine.</p>
     </div>
     <div class="ugc-track" id="ugcTrack">
-      <!-- To use real videos: replace <div class="ph dark">…</div> with
-           <video src="/video/ugc-01.mp4" poster="/video/ugc-01.jpg" playsinline muted loop controls></video> -->
-      <article class="ugc"><div class="media r-916"><div class="ph dark"><span class="play"><svg width="18" height="18"><use href="#i-play"/></svg></span><span class="ph-label">[UGC VIDEO PLACEHOLDER 01]</span><span class="ph-note">9:16 TikTok / Reel</span></div></div><div class="ugc-cap"><span class="placeholder-flag">PLACEHOLDER</span><p>[Short customer quote from the video.]</p><small>@[creator handle]</small></div></article>
-      <article class="ugc"><div class="media r-916"><div class="ph dark"><span class="play"><svg width="18" height="18"><use href="#i-play"/></svg></span><span class="ph-label">[UGC VIDEO PLACEHOLDER 02]</span><span class="ph-note">9:16 TikTok / Reel</span></div></div><div class="ugc-cap"><span class="placeholder-flag">PLACEHOLDER</span><p>[Short customer quote from the video.]</p><small>@[creator handle]</small></div></article>
-      <article class="ugc"><div class="media r-916"><div class="ph dark"><span class="play"><svg width="18" height="18"><use href="#i-play"/></svg></span><span class="ph-label">[UGC VIDEO PLACEHOLDER 03]</span><span class="ph-note">9:16 TikTok / Reel</span></div></div><div class="ugc-cap"><span class="placeholder-flag">PLACEHOLDER</span><p>[Short customer quote from the video.]</p><small>@[creator handle]</small></div></article>
-      <article class="ugc"><div class="media r-916"><div class="ph dark"><span class="play"><svg width="18" height="18"><use href="#i-play"/></svg></span><span class="ph-label">[UGC VIDEO PLACEHOLDER 04]</span><span class="ph-note">9:16 TikTok / Reel</span></div></div><div class="ugc-cap"><span class="placeholder-flag">PLACEHOLDER</span><p>[Short customer quote from the video.]</p><small>@[creator handle]</small></div></article>
-      <article class="ugc"><div class="media r-916"><div class="ph dark"><span class="play"><svg width="18" height="18"><use href="#i-play"/></svg></span><span class="ph-label">[UGC VIDEO PLACEHOLDER 05]</span><span class="ph-note">9:16 TikTok / Reel</span></div></div><div class="ugc-cap"><span class="placeholder-flag">PLACEHOLDER</span><p>[Short customer quote from the video.]</p><small>@[creator handle]</small></div></article>
+      <!-- Videos live in /video (silent, 540x960). Posters are the matching .webp files. -->
+      <article class="ugc">
+        <div class="media r-916">
+          <video muted loop playsinline preload="none" poster="/video/ritual-01.webp" aria-label="Using the Aureli wand along the cheek in a bathroom"><source src="/video/ritual-01.mp4" type="video/mp4"></video>
+          <button class="vid-toggle" type="button" aria-label="Play video"><svg class="i-play" width="14" height="14" aria-hidden="true"><use href="#i-play"/></svg><svg class="i-pause" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg></button>
+        </div>
+      </article>
+      <article class="ugc">
+        <div class="media r-916">
+          <video muted loop playsinline preload="none" poster="/video/ritual-02.webp" aria-label="Showing the Aureli wand and its curved LED head"><source src="/video/ritual-02.mp4" type="video/mp4"></video>
+          <button class="vid-toggle" type="button" aria-label="Play video"><svg class="i-play" width="14" height="14" aria-hidden="true"><use href="#i-play"/></svg><svg class="i-pause" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg></button>
+        </div>
+      </article>
+      <article class="ugc">
+        <div class="media r-916">
+          <video muted loop playsinline preload="none" poster="/video/ritual-03.webp" aria-label="Gliding the Aureli wand along the jaw during a skincare routine"><source src="/video/ritual-03.mp4" type="video/mp4"></video>
+          <button class="vid-toggle" type="button" aria-label="Play video"><svg class="i-play" width="14" height="14" aria-hidden="true"><use href="#i-play"/></svg><svg class="i-pause" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg></button>
+        </div>
+      </article>
     </div>
     <div class="mini-cta">
-      <a class="btn" href="#product">Start your ritual <span class="sep" aria-hidden="true"></span> <span data-p="price">£49.99</span></a>
-      <small><span data-guarantee-days>30</span>-day money-back guarantee</small>
+      <a class="btn" href="#product">Shop the wand <span class="sep" aria-hidden="true"></span> <span data-p="price">£49.99</span></a>
+      <small>3 free gifts and free shipping included</small>
     </div>
   </div>
 </section>
@@ -1214,11 +1220,37 @@ $$("[data-qty]").forEach(b => b.addEventListener("click", () => {
   set(0);
 })();
 
-/* ---------- UGC track arrows ---------- */
-$$("[data-track]").forEach(b => b.addEventListener("click", () => {
-  const t = $("#ugcTrack");
-  t.scrollBy({ left: Number(b.dataset.track) * t.clientWidth * 0.8, behavior: reduceMotion ? "auto" : "smooth" });
-}));
+/* ---------- brand videos: play when on screen, pause button on each ---------- */
+(() => {
+  const vids = $$(".ugc video");
+  if (!vids.length) return;
+  const state = new Map(vids.map(v => [v, { userPaused: reduceMotion, visible: false }]));
+  const btnOf = v => v.parentElement.querySelector(".vid-toggle");
+  const sync = v => {
+    const b = btnOf(v), playing = !v.paused;
+    b.dataset.playing = String(playing);
+    b.setAttribute("aria-label", playing ? "Pause video" : "Play video");
+  };
+  const tryPlay = v => { const p = v.play(); if (p && p.catch) p.catch(() => sync(v)); };
+  vids.forEach(v => {
+    v.addEventListener("play", () => sync(v));
+    v.addEventListener("pause", () => sync(v));
+    btnOf(v).addEventListener("click", () => {
+      const st = state.get(v);
+      if (v.paused) { st.userPaused = false; tryPlay(v); }
+      else { st.userPaused = true; v.pause(); }
+    });
+    sync(v);
+  });
+  if (!("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver(entries => entries.forEach(en => {
+    const v = en.target, st = state.get(v);
+    st.visible = en.isIntersecting;
+    if (st.visible && !st.userPaused) tryPlay(v);
+    else if (!st.visible && !v.paused) v.pause();
+  }), { threshold: 0.5 });
+  vids.forEach(v => io.observe(v));
+})();
 
 /* ---------- cart ---------- */
 const drawer = $("#drawer"), scrim = $("#scrim");
