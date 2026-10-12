@@ -107,3 +107,12 @@ Square locks completed orders. Don't mark orders complete in Square's own app, o
   geographic business address (search the three files for `class="tbc"`).
 - The cookie policy lists everything the site stores. If you ever add analytics, pixels or email marketing,
   update the Cookie and Privacy policies and add a consent tool BEFORE the new scripts load.
+
+## Worldwide sales and currencies
+- Header and footer have a currency menu. GBP (£49.99) and USD ($64.99) are fixed prices. All other currencies
+  are shown by converting the GBP price at the day's ECB rate (via /api/checkout?rates=1) and charged as £49.99.
+- Currency list: CONFIG.currencies in index.html and CURRENCIES in checkout.html (keep them the same).
+- Checkout accepts any country except BLOCKED (Cuba, Iran, North Korea, Syria, Russia, Belarus). The list is in
+  both checkout.html and api/checkout.js; keep them the same.
+- Postcode and county/state are only required for the UK (postcode) and US (ZIP and state).
+- Import duties notice appears on checkout for non-UK addresses, in the shipping policy, FAQ and terms.

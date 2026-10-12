@@ -141,7 +141,6 @@ main{max-width:1180px;margin:0 auto;padding:24px var(--gutter) 80px}
     </div>
   </header>
   <main>
-    <div class="notice warn" id="storageNotice" hidden>Ticks, tracking and notes can't be saved yet. In Vercel, open Storage, add Upstash Redis, connect it to this project, then redeploy.</div>
     <div class="notice warn" id="loadErr" role="alert" hidden></div>
     <div class="bar">
       <div class="tabs" role="tablist" aria-label="Order status">
@@ -163,9 +162,9 @@ main{max-width:1180px;margin:0 auto;padding:24px var(--gutter) 80px}
 <script>
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]);
-const COUNTRY = { GB:"United Kingdom", US:"United States" };
+const COUNTRY = new Proxy({}, { get: (_, c) => { try { return new Intl.DisplayNames(["en"], { type: "region" }).of(c); } catch (e) { return c; } } });
 const CARRIERS = ["Royal Mail","Evri","DPD","DHL","Parcelforce","UPS","USPS","FedEx","Yodel"];
-let ORDERS = [], storage = false, tab = "todo", lastLoad = 0, loading = false;
+let ORDERS = [], tab = "todo", lastLoad = 0, loading = false;
 
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200); }
 const fmtMoney = m => m ? new Intl.NumberFormat(m.currency === "USD" ? "en-US" : "en-GB", { style:"currency", currency:m.currency }).format(m.amount / 100) : "";
@@ -208,7 +207,6 @@ async function load(quiet){
   if (r.status === 401) { show("login"); return; }
   if (!r.ok) { $("#loadErr").textContent = "Couldn't load orders: " + (r.data.message || "error " + r.status); $("#loadErr").hidden = false; if (!ORDERS.length) $("#list").innerHTML = ""; return; }
   $("#loadErr").hidden = true;
-  storage = !!r.data.storage; $("#storageNotice").hidden = storage;
   ORDERS = r.data.orders || []; lastLoad = Date.now();
   $("#updated").textContent = "Updated " + new Date().toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
   render();
@@ -242,12 +240,12 @@ function card(o){
   const qty = o.items.reduce((n, i) => n + i.quantity, 0);
   const items = o.items.map(i => `<li>${esc(i.name)} × ${i.quantity}</li>`).join("") +
     `<li>3 free gifts × ${qty} (jade roller, ice roller, gua sha)</li>`;
-  const disabled = storage ? "" : "disabled";
+  const disabled = o.locked ? "disabled" : "";
   return `<article class="order${done ? " done" : ""}" data-id="${esc(o.id)}">
     <div class="o-head">
       <span class="o-ref">${esc(o.ref)}</span>
       <span class="o-date">${fmtDate(o.created_at)}</span>
-      <span class="pill">${o.market === "US" ? "US" : "UK"}</span>
+      <span class="pill" title="Shipping country">${esc(o.country === "GB" ? "UK" : (o.country || (o.market === "US" ? "US" : "UK")))}</span>
       ${done ? '<span class="pill ok">Fulfilled</span>' : '<span class="pill">To fulfil</span>'}
       ${o.refunded ? '<span class="pill warn">Refunded</span>' : ""}
       <span class="o-total">${fmtMoney(o.total)}</span>
@@ -269,16 +267,17 @@ function card(o){
         ${o.shipping_note ? `<p class="sn">Customer note: ${esc(o.shipping_note)}</p>` : ""}
       </div>
       <div class="col">
+        ${o.locked ? '<p class="sn" style="margin:0 0 10px">Completed in Square, so it can\'t be changed here.</p>' : ""}
         <label class="tick">
           <input type="checkbox" data-tick ${done ? "checked" : ""} ${disabled} aria-label="Mark ${esc(o.ref)} as fulfilled">
           <span>Fulfilled<small>${done ? "Ticked " + fmtDate(f.fulfilled_at) : "Tick once it's packed and sent"}</small></span>
         </label>
         <div class="grid2">
-          <div><label for="c-${esc(o.id)}">Carrier</label><input id="c-${esc(o.id)}" data-f="carrier" list="carriers" value="${esc(f.carrier || "")}" ${disabled}></div>
-          <div><label for="t-${esc(o.id)}">Tracking number</label><input id="t-${esc(o.id)}" data-f="tracking" value="${esc(f.tracking || "")}" autocomplete="off" ${disabled}></div>
+          <div><label for="c-${esc(o.id)}">Carrier</label><input id="c-${esc(o.id)}" data-f="carrier" maxlength="40" list="carriers" value="${esc(f.carrier || "")}" ${disabled}></div>
+          <div><label for="t-${esc(o.id)}">Tracking number</label><input id="t-${esc(o.id)}" data-f="tracking" maxlength="60" value="${esc(f.tracking || "")}" autocomplete="off" ${disabled}></div>
         </div>
-        <div class="field"><label for="u-${esc(o.id)}">Tracking link (optional)</label><input id="u-${esc(o.id)}" data-f="tracking_url" type="url" inputmode="url" value="${esc(f.tracking_url || "")}" ${disabled}></div>
-        <div class="field"><label for="n-${esc(o.id)}">Private note</label><textarea id="n-${esc(o.id)}" data-f="note" ${disabled}>${esc(f.note || "")}</textarea></div>
+        <div class="field"><label for="u-${esc(o.id)}">Tracking link (optional)</label><input id="u-${esc(o.id)}" data-f="tracking_url" maxlength="250" type="url" inputmode="url" value="${esc(f.tracking_url || "")}" ${disabled}></div>
+        <div class="field"><label for="n-${esc(o.id)}">Private note <span style="color:var(--taupe)">(up to 250 characters)</span></label><textarea id="n-${esc(o.id)}" data-f="note" maxlength="250" ${disabled}>${esc(f.note || "")}</textarea></div>
         <div class="save-row">
           <button class="btn" type="button" data-save ${disabled}>Save</button>
           <span class="status" data-status>${f.updated_at ? "Last saved " + fmtDate(f.updated_at) : ""}</span>
@@ -363,7 +362,6 @@ const dl = document.createElement("datalist"); dl.id = "carriers"; dl.innerHTML 
   }
   show("app");
   if (!r.ok) { $("#loadErr").textContent = "Couldn't load orders: " + (r.data.message || "error " + r.status); $("#loadErr").hidden = false; return; }
-  storage = !!r.data.storage; $("#storageNotice").hidden = storage;
   ORDERS = r.data.orders || []; lastLoad = Date.now();
   $("#updated").textContent = "Updated " + new Date().toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
   render();

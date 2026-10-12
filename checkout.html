@@ -55,6 +55,9 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
 .phone{display:flex}
 .phone span{display:flex;align-items:center;padding:0 12px;border:1px solid rgba(29,26,23,.25);border-right:0;background:var(--sand);font-size:15px;color:var(--stone);border-radius:2px 0 0 2px}
 .phone input{border-radius:0 2px 2px 0}
+select{width:100%;height:52px;padding:0 14px;background:var(--white);border:1px solid rgba(29,26,23,.25);border-radius:2px;font-size:16px}
+.phone.intl span{display:none}
+.phone.intl input{border-radius:2px}
 .country{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border:1px solid var(--linen);background:var(--sand);color:var(--stone);font-size:15px;border-radius:2px}
 .country a{font-size:13px}
 .hint{font-size:13px;color:var(--taupe);margin-top:6px}
@@ -127,7 +130,8 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
           </div>
           <div class="field">
             <label for="phone">Phone <span class="opt">(for delivery updates)</span></label>
-            <div class="phone"><span id="dial">+44</span><input id="phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" required aria-describedby="dial"></div>
+            <div class="phone"><span id="dial">+44</span><input id="phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" required aria-describedby="dial phone-hint"></div>
+            <p class="hint" id="phone-hint" hidden>Include your country code, starting with +. For example +33 6 12 34 56 78.</p>
             <p class="err" id="phone-err"></p>
           </div>
         </fieldset>
@@ -135,8 +139,9 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
         <fieldset>
           <legend>Shipping address</legend>
           <div class="field">
-            <label id="countryLabel">Country</label>
-            <div class="country" aria-labelledby="countryLabel"><span id="countryName">United Kingdom</span><a href="/" id="changeCountry">Change</a></div>
+            <label for="country">Country</label>
+            <select id="country" name="country" autocomplete="country" required></select>
+            <p class="err" id="country-err"></p>
           </div>
           <div class="row stack-s" style="margin-top:12px">
             <div class="field">
@@ -216,22 +221,28 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
         <div class="tot grand"><span>Total</span><span id="total">£49.99</span></div>
         <div class="fx" id="fx" hidden>
           <div class="tot"><span>Charged in pounds (GBP)</span><span id="fxTotal">…</span></div>
-          <p>Our payment provider charges in GBP, so you'll pay the equivalent of <span id="fxShown">$64.99</span> at today's exchange rate. Your bank converts it back to dollars, so the amount on your statement may differ slightly and may include your card's foreign transaction fee.</p>
+          <p id="fxText"></p>
         </div>
-        <p class="note">Estimated delivery in 5–10 business days. 30-day money-back guarantee.</p>
+        <p class="note">Free delivery worldwide, estimated 5–10 business days. 30-day money-back guarantee.</p>
+        <p class="note" id="dutyNote" hidden>Orders delivered outside the UK may be subject to import duties, taxes or handling fees charged on delivery. These aren't included in our price. <a href="/shipping.html">Shipping policy</a></p>
       </div>
     </aside>
   </div>
 </main>
 
 <script>
-/* Display prices must match PRICES in api/checkout.js (the server sets the real charge). */
-const MARKETS = {
-  UK: { locale:"en-GB", currency:"GBP", price:49.99, compare:79.99, country:"GB", countryName:"United Kingdom", dial:"+44",
-        city:"Town or city", region:"County", regionRequired:false, postal:"Postcode" },
-  US: { locale:"en-US", currency:"USD", price:64.99, compare:89.99, country:"US", countryName:"United States", dial:"+1",
-        city:"City", region:"State", regionRequired:true, postal:"ZIP code" }
-};
+/* Display prices must match PRICES in api/checkout.js (the server sets the real charge).
+   GBP and USD prices are fixed. Other currencies are shown at today's rate and charged as the GBP price. */
+const FIXED = { GBP: { price: 49.99, compare: 79.99 }, USD: { price: 64.99, compare: 89.99 } };
+const CURRENCIES = ["GBP","USD","EUR","CAD","AUD","NZD","CHF","SEK","NOK","DKK","PLN","CZK","HUF","RON","BGN","ISK","TRY",
+                    "JPY","CNY","HKD","SGD","KRW","INR","IDR","MYR","PHP","THB","ILS","MXN","BRL","ZAR"];
+// Countries we can't sell to (comprehensive sanctions / no delivery). Must match BLOCKED in api/checkout.js.
+const BLOCKED = ["CU","IR","KP","SY","RU","BY"];
+const ISO = ("AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW")
+  .split(" ").filter(c => !BLOCKED.includes(c) && !["AQ","BV","HM","TF","UM","GS","IO"].includes(c));  // also drops uninhabited territories
+const CURRENCY_COUNTRY = { GBP: "GB", USD: "US", CAD: "CA", AUD: "AU", NZD: "NZ", CHF: "CH", SEK: "SE", NOK: "NO", DKK: "DK",
+  PLN: "PL", CZK: "CZ", HUF: "HU", RON: "RO", BGN: "BG", ISK: "IS", TRY: "TR", JPY: "JP", CNY: "CN", HKD: "HK", SGD: "SG",
+  KRW: "KR", INR: "IN", IDR: "ID", MYR: "MY", PHP: "PH", THB: "TH", ILS: "IL", MXN: "MX", BRL: "BR", ZAR: "ZA" };
 const US_STATES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
 const $ = s => document.querySelector(s);
@@ -242,32 +253,85 @@ const store = {
 let LS, SS; try { LS = localStorage; SS = sessionStorage; } catch(e) {}
 
 const params = new URLSearchParams(location.search);
-const marketCode = MARKETS[params.get("m")] ? params.get("m") : (MARKETS[store.get(LS,"aureli-market")] ? store.get(LS,"aureli-market") : "UK");
-const M = MARKETS[marketCode];
-let qty = Math.max(0, Math.min(10, Number(store.get(LS,"aureli-cart")) || 0));
-const fmt = n => new Intl.NumberFormat(M.locale, { style:"currency", currency:M.currency }).format(n);
+const legacy = { UK: "GBP", US: "USD" };
+let currency = (params.get("cur") || legacy[params.get("m")] || legacy[store.get(LS, "aureli-market")] || store.get(LS, "aureli-market") || "GBP").toUpperCase();
+if (!CURRENCIES.includes(currency)) currency = "GBP";
+let RATE = null;                                   // GBP -> chosen currency, for display only
+const priceBasis = () => currency === "USD" ? "US" : "UK";   // which fixed price list the server charges
+const draftKey = () => "aureli-checkout-" + priceBasis();
+let country = "";
+let qty = Math.max(0, Math.min(10, Number(store.get(LS, "aureli-cart")) || 0));
 
+const locale = c => c === "USD" ? "en-US" : "en-GB";
+const fmt = (n, c = currency) => new Intl.NumberFormat(locale(c), { style: "currency", currency: c }).format(n);
+function unit(){
+  if (FIXED[currency]) return FIXED[currency];
+  return { price: FIXED.GBP.price * RATE, compare: FIXED.GBP.compare * RATE };
+}
+const regionName = (() => { try { const d = new Intl.DisplayNames(["en"], { type: "region" }); return c => d.of(c); } catch(e) { return c => c; } })();
+
+/* ---------- address rules per country ---------- */
+const RULESET = {
+  GB: { dial: "+44", city: "Town or city", region: "County", regionRequired: false, regionType: "text", postal: "Postcode", postalRequired: true },
+  US: { dial: "+1",  city: "City", region: "State", regionRequired: true, regionType: "us-states", postal: "ZIP code", postalRequired: true },
+  XX: { dial: "",    city: "Town or city", region: "State, province or region", regionRequired: false, regionType: "text", postal: "Postal code", postalRequired: false }
+};
+const R = () => RULESET[country] || RULESET.XX;
+
+function buildCountries(){
+  const sel = $("#country");
+  const sorted = ISO.map(c => [c, regionName(c) || c]).sort((a, b) => a[1].localeCompare(b[1]));
+  sel.innerHTML = '<option value="">Select your country</option>' +
+    '<option value="GB">' + regionName("GB") + '</option><option value="US">' + regionName("US") + '</option>' +
+    '<option disabled>──────────</option>' +
+    sorted.filter(([c]) => c !== "GB" && c !== "US").map(([c, n]) => `<option value="${c}">${n}</option>`).join("");
+}
+function applyCountry(c){
+  country = ISO.includes(c) ? c : "";
+  $("#country").value = country;
+  const r = R(), intl = !RULESET[country];
+  $("#dial").textContent = r.dial;
+  document.querySelector(".phone").classList.toggle("intl", intl);
+  $("#phone-hint").hidden = !intl;
+  $("#phone").setAttribute("autocomplete", intl ? "tel" : "tel-national");
+  $("#phone").setAttribute("placeholder", intl ? "+" : "");
+  $("#cityLabel").textContent = r.city;
+  $("#postalLabel").innerHTML = r.postal + (r.postalRequired ? "" : ' <span class="opt">(if you have one)</span>');
+  $("#postal").required = r.postalRequired;
+  $("#postal").setAttribute("inputmode", country === "US" ? "numeric" : "text");
+  // Region: US gets a state list, everyone else a text box.
+  const cur = $("#region"), keep = cur.value;
+  const wantSelect = r.regionType === "us-states";
+  if (wantSelect !== (cur.tagName === "SELECT")) {
+    let el;
+    if (wantSelect) {
+      el = document.createElement("select");
+      el.innerHTML = '<option value="">Select</option>' + Object.entries(US_STATES).map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+    } else {
+      el = document.createElement("input");
+    }
+    el.id = "region"; el.name = "region"; el.setAttribute("autocomplete", "address-level1");
+    cur.replaceWith(el);
+    el.addEventListener("blur", () => { if (el.value) validateField("region"); });
+  }
+  $("#region").required = r.regionRequired;
+  if (!wantSelect && keep && cur.tagName !== "SELECT") $("#region").value = keep;
+  $("#regionLabel").innerHTML = r.region + (r.regionRequired ? "" : ' <span class="opt">(optional)</span>');
+  $("#dutyNote").hidden = !country || country === "GB";
+  ["phone", "postal", "region"].forEach(id => { if (val(id)) validateField(id); else clearError(id); });
+}
 
 function init(){
-  document.documentElement.lang = M.locale;
-  $("#countryName").textContent = M.countryName;
-  if (marketCode === "US") $("#afterNote").textContent = "Next, you'll pay securely with Square by card, Apple Pay or Google Pay, charged in GBP. Your details will already be filled in.";
-  $("#dial").textContent = M.dial;
-  $("#cityLabel").textContent = M.city;
-  $("#postalLabel").textContent = M.postal;
-  $("#postal").setAttribute("autocomplete","postal-code");
-  if (marketCode === "US") {
-    $("#postal").setAttribute("inputmode","numeric");
-    $("#regionLabel").textContent = "State";
-    const sel = document.createElement("select");
-    sel.id = "region"; sel.name = "region"; sel.required = true; sel.autocomplete = "address-level1";
-    sel.innerHTML = '<option value="">Select</option>' + Object.entries(US_STATES).map(([c,n]) => `<option value="${c}">${n}</option>`).join("");
-    $("#region").replaceWith(sel);
-  }
+  document.documentElement.lang = locale(currency);
+  buildCountries();
+  const draft = readDraft();
+  const fromParam = (params.get("country") || "").toUpperCase();
+  applyCountry(draft.country || (ISO.includes(fromParam) ? fromParam : "") || CURRENCY_COUNTRY[currency] || "");
+  restoreDraft(draft);
   renderSummary();
-  restoreDraft();
-  loadQuote();
+  loadCharge();
 
+  $("#country").addEventListener("change", () => { applyCountry($("#country").value); validateField("country"); saveDraft(); });
   document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => {
     qty = Math.max(1, Math.min(10, qty + Number(b.dataset.q)));
     store.set(LS, "aureli-cart", String(qty));
@@ -293,58 +357,92 @@ function setBodyVisibility(){
   $("#sumBody").hidden = mobile && $("#sumToggle").getAttribute("aria-expanded") !== "true";
 }
 
-/* What Square will actually charge (US orders are charged in GBP). */
-let chargeQuote = null;
-async function loadQuote(){
+/* ---------- what Square will actually charge ---------- */
+let chargeUnitGBP = null;   // in pence, per wand
+async function loadCharge(){
+  if (currency === "GBP") return;
+  if (currency === "USD") {
+    try {
+      const r = await fetch("/api/checkout?market=US", { cache: "no-store" });
+      const q = r.ok ? await r.json() : null;
+      if (q && q.converted && q.unitAmount > 0) { chargeUnitGBP = q.unitAmount; renderSummary(); }
+    } catch (e) {}
+    return;
+  }
+  chargeUnitGBP = Math.round(FIXED.GBP.price * 100);
   try {
-    const r = await fetch("/api/checkout?market=" + marketCode, { cache: "no-store" });
-    if (!r.ok) return;
-    const q = await r.json();
-    if (q && q.converted && q.unitAmount > 0) { chargeQuote = q; renderSummary(); }
+    const r = await fetch("/api/checkout?rates=1");
+    const d = r.ok ? await r.json() : null;
+    if (d && d.rates && d.rates[currency] > 0) RATE = d.rates[currency];
   } catch (e) {}
+  if (!RATE) { currency = "GBP"; chargeUnitGBP = null; }   // couldn't get a rate: show GBP instead
+  renderSummary();
 }
-const fmtCharge = minor => new Intl.NumberFormat(M.locale, { style:"currency", currency: chargeQuote.currency }).format(minor / 100);
 
 function renderSummary(){
   $("#qty").textContent = qty;
   document.querySelectorAll(".gq").forEach(e => e.textContent = "× " + qty);
-  const t = fmt(M.price * qty);
-  $("#lineTotal").textContent = t;
-  $("#lineCompare").textContent = fmt(M.compare * qty);
-  $("#subtotal").textContent = t; $("#total").textContent = t; $("#totalTop").textContent = t;
-  if (chargeQuote) {
-    $("#fx").hidden = false;
-    $("#fxTotal").textContent = fmtCharge(chargeQuote.unitAmount * qty);
-    $("#fxShown").textContent = t;
-    $("#totalTop").textContent = t + " (" + fmtCharge(chargeQuote.unitAmount * qty) + ")";
+  if (!FIXED[currency] && !RATE) {          // rate still loading: show GBP for now
+    const t = fmt(FIXED.GBP.price * qty, "GBP");
+    $("#lineTotal").textContent = t; $("#lineCompare").textContent = fmt(FIXED.GBP.compare * qty, "GBP");
+    $("#subtotal").textContent = t; $("#total").textContent = t; $("#totalTop").textContent = t;
+    return;
   }
-  $("#payLabel").textContent = "Continue to payment";
+  const u = unit(), t = fmt(u.price * qty);
+  $("#lineTotal").textContent = t;
+  $("#lineCompare").textContent = fmt(u.compare * qty);
+  $("#subtotal").textContent = t; $("#total").textContent = t; $("#totalTop").textContent = t;
+  const fx = $("#fx");
+  if (currency !== "GBP" && chargeUnitGBP) {
+    const charged = fmt(chargeUnitGBP * qty / 100, "GBP");
+    fx.hidden = false;
+    $("#fxTotal").textContent = charged;
+    $("#totalTop").textContent = t + " (" + charged + ")";
+    $("#fxText").textContent = currency === "USD"
+      ? "Our payment provider charges in GBP, so you'll pay the equivalent of " + t + " at today's exchange rate. Your bank converts it back to dollars, so the amount on your statement may differ slightly and may include your card's foreign transaction fee."
+      : "Prices are shown in " + currency + " at today's exchange rate for convenience. You'll be charged " + charged + " in GBP, and your card provider converts it, so the amount on your statement may differ slightly and may include a foreign transaction fee.";
+    $("#afterNote").textContent = "Next, you'll pay securely with Square by card, Apple Pay or Google Pay, charged in GBP. Your details will already be filled in.";
+  } else {
+    fx.hidden = true;
+  }
 }
 
 /* ---------- validation ---------- */
 const val = id => ($("#" + id)?.value || "").trim();
 function normalisePhone(raw){
   let d = raw.replace(/[^\d+]/g, "");
-  if (marketCode === "UK") {
+  if (country === "GB") {
     if (d.startsWith("+44")) d = d.slice(3); else if (d.startsWith("0044")) d = d.slice(4);
     d = d.replace(/^0/, "");
     return /^\d{9,10}$/.test(d) ? "+44" + d : null;
   }
-  if (d.startsWith("+1")) d = d.slice(2); else if (d.length === 11 && d.startsWith("1")) d = d.slice(1);
-  return /^[2-9]\d{9}$/.test(d) ? "+1" + d : null;
+  if (country === "US") {
+    if (d.startsWith("+1")) d = d.slice(2); else if (d.length === 11 && d.startsWith("1")) d = d.slice(1);
+    return /^[2-9]\d{9}$/.test(d) ? "+1" + d : null;
+  }
+  if (d.startsWith("00")) d = "+" + d.slice(2);
+  return /^\+[1-9]\d{7,14}$/.test(d) ? d : null;
 }
 const RULES = {
   email: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "Enter an email address like name@example.com.",
-  phone: v => normalisePhone(v) ? "" : (marketCode === "UK" ? "Enter a UK phone number, like 07700 900123." : "Enter a 10-digit US phone number, like (555) 123-4567."),
+  phone: v => normalisePhone(v) ? "" : (country === "GB" ? "Enter a UK phone number, like 07700 900123."
+            : country === "US" ? "Enter a 10-digit US phone number, like (555) 123-4567."
+            : "Enter your phone number with your country code, starting with +."),
+  country: v => v ? "" : "Select your country.",
   first: v => v ? "" : "Enter your first name.",
   last: v => v ? "" : "Enter your last name.",
   line1: v => v.length >= 3 ? "" : "Enter the first line of your address.",
-  city: v => v ? "" : (marketCode === "UK" ? "Enter your town or city." : "Enter your city."),
-  region: v => (!M.regionRequired || v) ? "" : "Select your state.",
-  postal: v => marketCode === "UK"
-    ? (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(v) ? "" : "Enter a valid UK postcode, like SW1A 1AA.")
-    : (/^\d{5}(-\d{4})?$/.test(v) ? "" : "Enter a 5-digit ZIP code.")
+  city: v => v ? "" : (country === "US" ? "Enter your city." : "Enter your town or city."),
+  region: v => (!R().regionRequired || v) ? "" : "Select your state.",
+  postal: v => country === "GB" ? (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(v) ? "" : "Enter a valid UK postcode, like SW1A 1AA.")
+             : country === "US" ? (/^\d{5}(-\d{4})?$/.test(v) ? "" : "Enter a 5-digit ZIP code.")
+             : (v.length <= 12 ? "" : "Postal codes are 12 characters or fewer.")
 };
+function clearError(id){
+  const el = $("#" + id), err = $("#" + id + "-err");
+  if (el) el.removeAttribute("aria-invalid");
+  if (err) err.textContent = "";
+}
 function validateField(id){
   if (!RULES[id]) return true;
   const msg = RULES[id](val(id));
@@ -357,10 +455,9 @@ function validateField(id){
 
 /* ---------- draft (kept only for this browser tab) ---------- */
 const FIELDS = ["email","phone","first","last","line1","line2","city","region","postal"];
-function saveDraft(){ const d = {}; FIELDS.forEach(f => d[f] = val(f)); store.set(SS, "aureli-checkout-" + marketCode, JSON.stringify(d)); }
-function restoreDraft(){
-  try { const d = JSON.parse(store.get(SS, "aureli-checkout-" + marketCode) || "{}"); FIELDS.forEach(f => { if (d[f] && $("#" + f)) $("#" + f).value = d[f]; }); } catch(e) {}
-}
+function saveDraft(){ const d = { country }; FIELDS.forEach(f => d[f] = val(f)); store.set(SS, draftKey(), JSON.stringify(d)); }
+function readDraft(){ try { return JSON.parse(store.get(SS, draftKey()) || "{}"); } catch(e) { return {}; } }
+function restoreDraft(d){ FIELDS.forEach(f => { if (d[f] && $("#" + f)) $("#" + f).value = d[f]; }); }
 
 /* ---------- submit ---------- */
 let busy = false;
@@ -381,18 +478,18 @@ async function submit(e){
   btn.disabled = true; btn.setAttribute("aria-busy","true");
   $("#payLabel").textContent = "Opening secure payment…";
 
-  const postal = marketCode === "UK" ? val("postal").toUpperCase().replace(/\s*(\d[A-Z]{2})$/, " $1") : val("postal");
+  const postal = country === "GB" ? val("postal").toUpperCase().replace(/\s*(\d[A-Z]{2})$/, " $1") : val("postal");
   const customer = {
     email: val("email"), phone: normalisePhone(val("phone")),
     first_name: val("first"), last_name: val("last"),
     address_line_1: val("line1"), address_line_2: val("line2"),
     locality: val("city"), administrative_district_level_1: val("region"),
-    postal_code: postal, country: M.country
+    postal_code: postal, country
   };
   try {
     const r = await fetch("/api/checkout", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ market: marketCode, qty, customer })
+      body: JSON.stringify({ market: priceBasis(), currency, qty, customer })
     });
     const data = await r.json().catch(() => ({}));
     if (r.ok && data.url) { window.location.href = data.url; return; }

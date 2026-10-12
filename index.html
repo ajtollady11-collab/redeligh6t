@@ -120,10 +120,11 @@ p{margin:0}
 .logo{font-family:var(--serif);font-size:24px;letter-spacing:.34em;text-decoration:none;padding-left:.34em;font-weight:500}
 .h-right{display:flex;justify-content:flex-end;align-items:center;gap:6px}
 .icon-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;background:none;border:0;padding:0 8px;position:relative}
-.market{display:inline-flex;border:1px solid rgba(138,122,106,.4);border-radius:2px;overflow:hidden;font-size:12px;letter-spacing:.06em}
-.market button{border:0;background:none;padding:6px 10px;min-height:32px;color:var(--taupe);white-space:nowrap}
-@media (max-width:420px){.header .market button{padding:6px 7px;font-size:11px}.logo{letter-spacing:.26em;padding-left:.26em}}
-.market button[aria-pressed="true"]{background:var(--black);color:var(--ivory)}
+.currency{position:relative;display:inline-flex;align-items:center}
+.currency select{appearance:none;-webkit-appearance:none;font:inherit;font-size:12.5px;letter-spacing:.04em;color:var(--ink);background:transparent;border:1px solid rgba(138,122,106,.4);border-radius:2px;min-height:36px;padding:0 26px 0 10px;cursor:pointer;max-width:9.5em}
+.currency::after{content:"";position:absolute;right:10px;top:50%;width:6px;height:6px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:translateY(-70%) rotate(45deg);pointer-events:none;opacity:.6}
+.currency select:hover{border-color:var(--ink)}
+@media (max-width:420px){.header .currency select{font-size:12px;padding:0 22px 0 8px;max-width:7.4em}.header .currency::after{right:8px}.logo{letter-spacing:.26em;padding-left:.26em}}
 .bag-count{position:absolute;top:6px;right:2px;min-width:18px;height:18px;border-radius:9px;background:var(--black);color:var(--ivory);font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 5px}
 .bag-count[data-n="0"]{display:none}
 .menu-btn{display:none}
@@ -422,9 +423,9 @@ p{margin:0}
 .news button{background:none;border:0;color:var(--ivory);padding:0 4px;font-size:14px;letter-spacing:.06em}
 .news .msg{font-size:13px;color:#cfc3b4;margin-top:10px;min-height:20px}
 .foot-bottom{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-top:56px;padding-top:24px;border-top:1px solid rgba(247,242,234,.15);font-size:12.5px;color:#9d8f80}
-.foot-bottom .market{border-color:rgba(247,242,234,.3)}
-.foot-bottom .market button{color:#cfc3b4}
-.foot-bottom .market button[aria-pressed="true"]{background:var(--ivory);color:var(--black)}
+.foot-bottom .currency{color:#e6dccd}
+.foot-bottom .currency select{color:#e6dccd;border-color:rgba(247,242,234,.3);max-width:none}
+.foot-bottom .currency select option{color:var(--ink);background:var(--white)}
 .pay{display:flex;gap:6px;flex-wrap:wrap}
 .pay span{border:1px solid rgba(247,242,234,.25);padding:3px 8px;font-size:11px;letter-spacing:.04em;color:#cfc3b4}
 
@@ -540,10 +541,9 @@ p{margin:0}
     </div>
     <a class="logo" href="#top" aria-label="AURELI home">AURELI</a>
     <div class="h-right">
-      <div class="market" role="group" aria-label="Choose your region">
-        <button type="button" data-set-market="UK" aria-pressed="false">UK £</button>
-        <button type="button" data-set-market="US" aria-pressed="false">US $</button>
-      </div>
+      <label class="currency"><span class="sr-only">Currency</span>
+        <select data-currency-select aria-label="Currency"><option value="GBP">£ GBP</option><option value="USD">$ USD</option></select>
+      </label>
       <button class="icon-btn" id="bagBtn" aria-label="Open bag"><svg width="22" height="22"><use href="#i-bag"/></svg><span class="bag-count" data-n="0" id="bagCount">0</span></button>
     </div>
   </div>
@@ -687,7 +687,7 @@ p{margin:0}
           <summary>Shipping &amp; returns <span class="pm" aria-hidden="true"></span></summary>
           <div class="acc-body">
             <p>Shipping is free on every order.</p>
-            <p>Orders are processed within 1–2 business days. Once dispatched, estimated shipping times are 4–8 business days for both the United Kingdom and the United States.</p>
+            <p>Orders are processed within 1–2 business days. Once dispatched, estimated shipping times are 4–8 business days to all destinations, including the United Kingdom and the United States.</p>
             <p>Estimated total delivery time is 5–10 business days, including processing. Delivery times are estimates and may occasionally vary. Tracking information will be provided when available.</p>
             <p>Every wand is covered by our <span data-guarantee-days>30</span>-day money-back guarantee. <a href="/shipping.html">Read our full shipping policy</a>.</p>
           </div>
@@ -935,7 +935,8 @@ p{margin:0}
       <details class="acc"><summary>Does the microcurrent hurt? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">It shouldn't. Most people feel a light tingle. Start on the lowest intensity and only increase if it feels comfortable. Always use it with a serum or gel, never on dry skin.</div></details>
       <details class="acc"><summary>Is it suitable for everyone? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Not everyone. Please don't use it if you're pregnant, have a pacemaker or another implanted electronic device, have epilepsy, or have broken or irritated skin. Avoid the eye area. If you have a medical condition or are unsure, speak to your doctor before use.</div></details>
       <details class="acc"><summary>Are the 3 free gifts really free? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Yes. The Black Jade Facial Roller, Black Ice Facial Roller and Black Gua Sha Facial Tool are added to every wand order at no extra cost. Order two wands and you get two sets.</div></details>
-      <details class="acc"><summary>How long does delivery take? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body"><p>Orders are processed within 1–2 business days. Once dispatched, estimated shipping times are 4–8 business days for both the United Kingdom and the United States.</p><p>Estimated total delivery time is 5–10 business days, including processing. Delivery times are estimates and may occasionally vary. Tracking information will be provided when available. Shipping is free on every order.</p></div></details>
+      <details class="acc"><summary>How long does delivery take? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body"><p>Orders are processed within 1–2 business days. Once dispatched, estimated shipping times are 4–8 business days to all destinations, including the United Kingdom and the United States.</p><p>Estimated total delivery time is 5–10 business days, including processing. Delivery times are estimates and may occasionally vary. Tracking information will be provided when available. Shipping is free on every order.</p></div></details>
+      <details class="acc"><summary>Do you ship outside the UK and US? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body"><p>Yes, we ship worldwide and delivery is free. Choose your currency at the top of the page to see prices in it. Orders are charged in pounds (GBP) and your card provider converts the amount.</p><p>Orders delivered outside the UK may be subject to import duties, taxes or handling fees charged by your country or the delivery company. These aren't included in our prices and are payable on delivery, so please check your country's rules before ordering.</p></div></details>
       <details class="acc"><summary>What if it's not for me? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">You're covered by our <span data-guarantee-days>30</span>-day money-back guarantee. If you're not happy, contact us within <span data-guarantee-days>30</span> days of delivery and we'll arrange a refund. See our returns policy for full details.</div></details>
       <details class="acc"><summary>Can I use it beyond my face? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Aureli is designed for the face and neck. Some people enjoy a gentle massage elsewhere as part of a wider self-care routine. Always follow the instruction guide, start on the lowest setting and avoid broken or irritated skin.</div></details>
       <details class="acc"><summary>How do I charge it? <span class="pm" aria-hidden="true"></span></summary><div class="acc-body">Use the included charging cable. [Confirm charging type and battery life with your supplier and add them here.]</div></details>
@@ -1017,10 +1018,9 @@ p{margin:0}
     </div>
     <div class="foot-bottom">
       <span>© <span id="year">2026</span> AURELI. All rights reserved.</span>
-      <div class="market" role="group" aria-label="Choose your region">
-        <button type="button" data-set-market="UK" aria-pressed="false">United Kingdom (£)</button>
-        <button type="button" data-set-market="US" aria-pressed="false">United States ($)</button>
-      </div>
+      <label class="currency"><span class="sr-only">Currency</span>
+        <select data-currency-select data-long aria-label="Currency"><option value="GBP">£ GBP, British pound</option><option value="USD">$ USD, US dollar</option></select>
+      </label>
       <div class="pay" aria-label="Accepted payment methods"><span>Visa</span><span>Mastercard</span><span>Amex</span><span>Apple Pay</span><span>Google Pay</span><span>PayPal</span></div>
     </div>
   </div>
@@ -1062,28 +1062,29 @@ p{margin:0}
 
 <script>
 /* =========================================================
-   CONFIG: edit these values. Prices are fixed per market,
-   never converted.
+   CONFIG: edit these values.
+   GBP and USD prices are fixed. Every other currency is shown by
+   converting the GBP prices at today's rate, and charged in GBP.
+   (Server prices live in api/checkout.js — keep them in step.)
    ========================================================= */
 const CONFIG = {
   guaranteeDays: 30,
-  defaultMarket: "US",          // used when a visitor is outside the UK and US
-  markets: {
-    UK: {
-      label: "UK", currency: "GBP", locale: "en-GB",
-      price: 49.99, compare: 79.99, giftValue: 29.99,
-      shipping: "Free shipping on every UK order",
-      shippingShort: "Free UK shipping",
-      fxNote: ""
-    },
-    US: {
-      label: "US", currency: "USD", locale: "en-US",
-      price: 64.99, compare: 89.99, giftValue: 39.99, // confirm the US gift value
-      shipping: "Free shipping on every US order",
-      shippingShort: "Free US shipping",
-      fxNote: "Charged in GBP at checkout at the equivalent of the US price."
-    }
-  }
+  defaultCurrency: "USD",       // used when we can't tell where a visitor is
+  fixed: {
+    GBP: { price: 49.99, compare: 79.99, giftValue: 29.99 },
+    USD: { price: 64.99, compare: 89.99, giftValue: 39.99 }   // confirm the US gift value
+  },
+  // Currencies offered in the dropdown (shown only if today's rate is available).
+  currencies: ["GBP","USD","EUR","CAD","AUD","NZD","CHF","SEK","NOK","DKK","PLN","CZK","HUF","RON","BGN","ISK","TRY",
+               "JPY","CNY","HKD","SGD","KRW","INR","IDR","MYR","PHP","THB","ILS","MXN","BRL","ZAR"]
+};
+const COUNTRY_CURRENCY = {
+  GB:"GBP", US:"USD", CA:"CAD", AU:"AUD", NZ:"NZD", CH:"CHF", LI:"CHF", SE:"SEK", NO:"NOK", DK:"DKK", PL:"PLN",
+  CZ:"CZK", HU:"HUF", RO:"RON", BG:"BGN", IS:"ISK", TR:"TRY", JP:"JPY", CN:"CNY", HK:"HKD", SG:"SGD", KR:"KRW",
+  IN:"INR", ID:"IDR", MY:"MYR", PH:"PHP", TH:"THB", IL:"ILS", MX:"MXN", BR:"BRL", ZA:"ZAR",
+  AT:"EUR", BE:"EUR", HR:"EUR", CY:"EUR", EE:"EUR", FI:"EUR", FR:"EUR", DE:"EUR", GR:"EUR", IE:"EUR", IT:"EUR",
+  LV:"EUR", LT:"EUR", LU:"EUR", MT:"EUR", NL:"EUR", PT:"EUR", SK:"EUR", SI:"EUR", ES:"EUR", AD:"EUR", MC:"EUR",
+  SM:"EUR", VA:"EUR", ME:"EUR", XK:"EUR"
 };
 
 /* ---------- helpers ---------- */
@@ -1095,52 +1096,82 @@ const store = {
 };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* ---------- market / pricing ---------- */
-let market = null;
+/* ---------- currency / pricing ---------- */
+let currency = null;          // e.g. "GBP", "USD", "EUR"
+let visitorCountry = "";      // from /api/geo, passed to checkout to pre-select the country
+let RATES = null;             // { EUR: 1.17, ... } per 1 GBP
 let cartQty = Number(store.get("aureli-cart") || 0) || 0;
 let pickQty = 1;
 
-function fmt(n, m = CONFIG.markets[market]){
-  return new Intl.NumberFormat(m.locale, { style: "currency", currency: m.currency }).format(n);
+const available = c => c === "GBP" || c === "USD" || !!(RATES && RATES[c]);
+function prices(c = currency){
+  if (CONFIG.fixed[c]) return CONFIG.fixed[c];
+  const r = RATES[c], g = CONFIG.fixed.GBP;
+  return { price: g.price * r, compare: g.compare * r, giftValue: g.giftValue * r };
 }
-function applyMarket(code, save){
-  if (!CONFIG.markets[code]) code = CONFIG.defaultMarket;
-  market = code;
-  const m = CONFIG.markets[code];
+function fmt(n, c = currency){
+  return new Intl.NumberFormat(c === "USD" ? "en-US" : "en-GB", { style: "currency", currency: c }).format(n);
+}
+const symbol = c => { try { return new Intl.NumberFormat(c === "USD" ? "en-US" : "en-GB", { style: "currency", currency: c, currencyDisplay: "narrowSymbol" }).formatToParts(0).find(p => p.type === "currency").value; } catch(e){ return ""; } };
+const currencyName = c => { try { return new Intl.DisplayNames(["en"], { type: "currency" }).of(c); } catch(e){ return c; } };
+const TEXT = c => ({
+  shipping: c === "GBP" ? "Free shipping on every UK order" : c === "USD" ? "Free shipping on every US order" : "Free worldwide shipping",
+  shippingShort: c === "GBP" ? "Free UK shipping" : c === "USD" ? "Free US shipping" : "Free worldwide shipping",
+  fxNote: c === "GBP" ? "" : c === "USD" ? "Charged in GBP at checkout at the equivalent of the US price."
+        : "Shown in " + c + " at today's exchange rate. You're charged " + fmt(CONFIG.fixed.GBP.price, "GBP") + " per wand in GBP at checkout."
+});
+
+function buildCurrencyOptions(){
+  const list = CONFIG.currencies.filter(available);
+  $$("[data-currency-select]").forEach(sel => {
+    const long = sel.hasAttribute("data-long");
+    sel.innerHTML = list.map(c => {
+      const sym = symbol(c), lab = long ? `${sym} ${c}, ${currencyName(c)}` : (sym && sym !== c ? `${sym} ${c}` : c);
+      return `<option value="${c}">${lab}</option>`;
+    }).join("");
+    sel.value = currency || "GBP";
+  });
+}
+function applyCurrency(code, save){
+  if (!available(code)) code = available(CONFIG.defaultCurrency) ? CONFIG.defaultCurrency : "GBP";
+  currency = code;
   if (save) store.set("aureli-market", code);
-  const values = { price: m.price, compare: m.compare, save: m.compare - m.price, giftValue: m.giftValue };
+  const p = prices(code);
+  const values = { price: p.price, compare: p.compare, save: p.compare - p.price, giftValue: p.giftValue };
   $$("[data-p]").forEach(el => { el.textContent = fmt(values[el.dataset.p]); });
-  $$("[data-market-text]").forEach(el => { el.textContent = m[el.dataset.marketText]; });
-  $$("[data-set-market]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.setMarket === code)));
-  document.documentElement.lang = code === "UK" ? "en-GB" : "en-US";
+  const t = TEXT(code);
+  $$("[data-market-text]").forEach(el => { el.textContent = t[el.dataset.marketText]; });
+  $$("[data-currency-select]").forEach(sel => { sel.value = code; });
+  document.documentElement.lang = code === "USD" ? "en-US" : "en-GB";
   renderCart();
+}
+function savedCurrency(){
+  const s = store.get("aureli-market");                 // older versions stored "UK" / "US"
+  return s === "UK" ? "GBP" : s === "US" ? "USD" : s;
 }
 function guessFromTimezone(){
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    if (tz === "Europe/London" || tz === "Europe/Belfast") return "UK";
-    if (tz.startsWith("America/")) return "US";
+    if (tz === "Europe/London" || tz === "Europe/Belfast") return "GBP";
+    if (/^America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Detroit|Indiana|Kentucky|Boise|Juneau|Adak|Nome|Sitka|Yakutat|Menominee|North_Dakota|Metlakatla)/.test(tz)) return "USD";
+    if (tz.startsWith("Europe/")) return "EUR";
   } catch(e){}
-  return CONFIG.defaultMarket;
+  return CONFIG.defaultCurrency;
 }
-async function initMarket(){
-  const saved = store.get("aureli-market");
-  if (saved && CONFIG.markets[saved]) { applyMarket(saved); return; }
-  applyMarket(guessFromTimezone());
-  // On Vercel, /api/geo returns the visitor's country from their IP.
-  try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 1500);
-    const r = await fetch("/api/geo", { signal: ctrl.signal });
-    clearTimeout(t);
-    if (r.ok) {
-      const { country } = await r.json();
-      if (country === "GB") applyMarket("UK");
-      else if (country === "US") applyMarket("US");
-    }
-  } catch(e){ /* keep timezone guess */ }
+async function initCurrency(){
+  const saved = savedCurrency();
+  applyCurrency(saved && CONFIG.currencies.includes(saved) && available(saved) ? saved : (available(guessFromTimezone()) ? guessFromTimezone() : "GBP"));
+  const timed = (url, ms) => { const c = new AbortController(); const t = setTimeout(() => c.abort(), ms);
+    return fetch(url, { signal: c.signal }).then(r => r.ok ? r.json() : null).catch(() => null).finally(() => clearTimeout(t)); };
+  const [geo, rates] = await Promise.all([timed("/api/geo", 1500), timed("/api/checkout?rates=1", 3000)]);
+  if (rates && rates.rates) { RATES = rates.rates; }
+  buildCurrencyOptions();
+  if (geo && geo.country) visitorCountry = geo.country;
+  if (saved && available(saved)) { applyCurrency(saved); return; }
+  const fromGeo = COUNTRY_CURRENCY[visitorCountry];
+  applyCurrency(fromGeo && available(fromGeo) ? fromGeo : (available(guessFromTimezone()) ? guessFromTimezone() : CONFIG.defaultCurrency));
 }
-$$("[data-set-market]").forEach(b => b.addEventListener("click", () => applyMarket(b.dataset.setMarket, true)));
+$$("[data-currency-select]").forEach(sel => sel.addEventListener("change", () => applyCurrency(sel.value, true)));
 $$("[data-guarantee-days]").forEach(el => el.textContent = CONFIG.guaranteeDays);
 $("#year").textContent = new Date().getFullYear();
 
@@ -1258,8 +1289,8 @@ let lastFocus = null;
 
 function saveCart(){ store.set("aureli-cart", String(cartQty)); }
 function renderCart(){
-  if (!market) return;
-  const m = CONFIG.markets[market];
+  if (!currency) return;
+  const m = prices();
   const body = $("#drawerBody"), foot = $("#drawerFoot");
   const count = $("#bagCount");
   count.textContent = cartQty; count.dataset.n = cartQty;
@@ -1325,7 +1356,9 @@ function toast(msg){
 function checkout(){
   if (!cartQty) return;
   saveCart();
-  window.location.href = "/checkout.html?m=" + encodeURIComponent(market);
+  const q = new URLSearchParams({ cur: currency });
+  if (visitorCountry) q.set("country", visitorCountry);
+  window.location.href = "/checkout.html?" + q.toString();
 }
 
 $("#atc").addEventListener("click", () => addToCart(pickQty));
@@ -1406,7 +1439,7 @@ $("#newsForm").addEventListener("submit", e => {
     .catch(() => {});
 })();
 
-initMarket();
+initCurrency();
 renderCart();
 </script>
 </body>
