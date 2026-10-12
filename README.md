@@ -86,3 +86,24 @@ Imported reviews go in `reviews.json` at the top level of the repo. Each review 
 ```
 `title` and `photo` are optional. The page shows 12 at a time with a "Show more reviews" button.
 While `reviews.json` is empty (`[]`), the section shows a short "being transferred" note instead.
+
+## Orders dashboard (/admin.html)
+Password-protected page listing every paid order from Square with name, email, phone and
+shipping address. Tick orders off as fulfilled (and untick), save carrier, tracking number,
+tracking link and a private note, search, and export a CSV.
+
+Setup in Vercel (then redeploy):
+- Settings > Environment Variables: add `DASHBOARD_PASSWORD` (12+ characters). Nothing else needed.
+Files: `admin.html` (page) and `api/admin.js` (server). Changing the password signs everyone out.
+Orders come from Square. Ticks, tracking and notes are saved as metadata on each Square order
+(keys aureli_status, aureli_link, aureli_note). Orders stay "open" in Square on purpose, because
+Square locks completed orders. Don't mark orders complete in Square's own app, or they lock here too.
+
+## Legal pages
+- `/privacy-policy`, `/terms-of-service`, `/cookie-policy` are `privacy-policy.html`, `terms-of-service.html`,
+  `cookie-policy.html`, served at the short addresses by the rewrites in `vercel.json`. Shared styles: `legal.css`.
+- Linked from the homepage footer (Legal column), "Returns & refunds" in the Help column, and the checkout page.
+- Before launch, replace the two dashed "to be added" boxes on each page with the trader's full name and
+  geographic business address (search the three files for `class="tbc"`).
+- The cookie policy lists everything the site stores. If you ever add analytics, pixels or email marketing,
+  update the Cookie and Privacy policies and add a consent tool BEFORE the new scripts load.
