@@ -53,11 +53,13 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--error)
 .err{font-size:13px;color:var(--error);margin-top:6px;min-height:0}
 .err:empty{display:none}
 .phone{display:flex}
-.phone span{display:flex;align-items:center;padding:0 12px;border:1px solid rgba(29,26,23,.25);border-right:0;background:var(--sand);font-size:15px;color:var(--stone);border-radius:2px 0 0 2px}
+.phone > span{display:flex;align-items:center;padding:0 12px;border:1px solid rgba(29,26,23,.25);border-right:0;background:var(--sand);font-size:15px;color:var(--stone);border-radius:2px 0 0 2px}
 .phone input{border-radius:0 2px 2px 0}
 select{width:100%;height:52px;padding:0 14px;background:var(--white);border:1px solid rgba(29,26,23,.25);border-radius:2px;font-size:16px}
-.phone.intl span{display:none}
-.phone.intl input{border-radius:2px}
+.dial{position:relative;display:flex;align-items:center;gap:6px;padding:0 10px 0 12px;border:1px solid rgba(29,26,23,.25);border-right:0;background:var(--sand);font-size:15px;color:var(--ink);border-radius:2px 0 0 2px;min-width:84px;margin:0}
+.dial::after{content:"";width:5px;height:5px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:translateY(-2px) rotate(45deg);opacity:.6}
+.dial select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0}
+.dial:focus-within{outline:2px solid var(--black);outline-offset:2px}
 .country{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border:1px solid var(--linen);background:var(--sand);color:var(--stone);font-size:15px;border-radius:2px}
 .country a{font-size:13px}
 .hint{font-size:13px;color:var(--taupe);margin-top:6px}
@@ -130,8 +132,10 @@ select{width:100%;height:52px;padding:0 14px;background:var(--white);border:1px 
           </div>
           <div class="field">
             <label for="phone">Phone <span class="opt">(for delivery updates)</span></label>
-            <div class="phone"><span id="dial">+44</span><input id="phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" required aria-describedby="dial phone-hint"></div>
-            <p class="hint" id="phone-hint" hidden>Include your country code, starting with +. For example +33 6 12 34 56 78.</p>
+            <div class="phone">
+              <label class="dial"><span class="sr-only">Phone country code</span><span id="dial" aria-hidden="true">+44</span><select id="dialSel" autocomplete="tel-country-code"></select></label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" required>
+            </div>
             <p class="err" id="phone-err"></p>
           </div>
         </fieldset>
@@ -243,6 +247,8 @@ const ISO = ("AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG 
 const CURRENCY_COUNTRY = { GBP: "GB", USD: "US", CAD: "CA", AUD: "AU", NZD: "NZ", CHF: "CH", SEK: "SE", NOK: "NO", DKK: "DK",
   PLN: "PL", CZK: "CZ", HUF: "HU", RON: "RO", BGN: "BG", ISK: "IS", TRY: "TR", JPY: "JP", CNY: "CN", HKD: "HK", SGD: "SG",
   KRW: "KR", INR: "IN", IDR: "ID", MYR: "MY", PHP: "PH", THB: "TH", ILS: "IL", MXN: "MX", BRL: "BR", ZAR: "ZA" };
+// Country calling codes (from Google's libphonenumber data).
+const DIAL = Object.fromEntries("AD376 AE971 AF93 AG1 AI1 AL355 AM374 AO244 AR54 AS1 AT43 AU61 AW297 AX358 AZ994 BA387 BB1 BD880 BE32 BF226 BG359 BH973 BI257 BJ229 BL590 BM1 BN673 BO591 BQ599 BR55 BS1 BT975 BW267 BY375 BZ501 CA1 CC61 CD243 CF236 CG242 CH41 CI225 CK682 CL56 CM237 CN86 CO57 CR506 CU53 CV238 CW599 CX61 CY357 CZ420 DE49 DJ253 DK45 DM1 DO1 DZ213 EC593 EE372 EG20 EH212 ER291 ES34 ET251 FI358 FJ679 FK500 FM691 FO298 FR33 GA241 GB44 GD1 GE995 GF594 GG44 GH233 GI350 GL299 GM220 GN224 GP590 GQ240 GR30 GT502 GU1 GW245 GY592 HK852 HN504 HR385 HT509 HU36 ID62 IE353 IL972 IM44 IN91 IO246 IQ964 IR98 IS354 IT39 JE44 JM1 JO962 JP81 KE254 KG996 KH855 KI686 KM269 KN1 KP850 KR82 KW965 KY1 KZ7 LA856 LB961 LC1 LI423 LK94 LR231 LS266 LT370 LU352 LV371 LY218 MA212 MC377 MD373 ME382 MF590 MG261 MH692 MK389 ML223 MM95 MN976 MO853 MP1 MQ596 MR222 MS1 MT356 MU230 MV960 MW265 MX52 MY60 MZ258 NA264 NC687 NE227 NF672 NG234 NI505 NL31 NO47 NP977 NR674 NU683 NZ64 OM968 PA507 PE51 PF689 PG675 PH63 PK92 PL48 PM508 PR1 PS970 PT351 PW680 PY595 QA974 RE262 RO40 RS381 RU7 RW250 SA966 SB677 SC248 SD249 SE46 SG65 SH290 SI386 SJ47 SK421 SL232 SM378 SN221 SO252 SR597 SS211 ST239 SV503 SX1 SY963 SZ268 TC1 TD235 TG228 TH66 TJ992 TK690 TL670 TM993 TN216 TO676 TR90 TT1 TV688 TW886 TZ255 UA380 UG256 US1 UY598 UZ998 VA39 VC1 VE58 VG1 VI1 VN84 VU678 WF681 WS685 XK383 YE967 YT262 ZA27 ZM260 ZW263".split(" ").map(x => [x.slice(0, 2), x.slice(2)]));
 const US_STATES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
 
 const $ = s => document.querySelector(s);
@@ -260,6 +266,8 @@ let RATE = null;                                   // GBP -> chosen currency, fo
 const priceBasis = () => currency === "USD" ? "US" : "UK";   // which fixed price list the server charges
 const draftKey = () => "aureli-checkout-" + priceBasis();
 let country = "";
+let dialCountry = "";        // whose calling code the phone number uses
+let dialChosen = false;      // true once the customer picks a code themselves
 let qty = Math.max(0, Math.min(10, Number(store.get(LS, "aureli-cart")) || 0));
 
 const locale = c => c === "USD" ? "en-US" : "en-GB";
@@ -281,6 +289,9 @@ const R = () => RULESET[country] || RULESET.XX;
 function buildCountries(){
   const sel = $("#country");
   const sorted = ISO.map(c => [c, regionName(c) || c]).sort((a, b) => a[1].localeCompare(b[1]));
+  const dialSel = $("#dialSel");
+  dialSel.innerHTML = ['GB', 'US'].concat(sorted.map(([c]) => c).filter(c => c !== "GB" && c !== "US"))
+    .filter(c => DIAL[c]).map(c => `<option value="${c}">${regionName(c) || c} (+${DIAL[c]})</option>`).join("");
   sel.innerHTML = '<option value="">Select your country</option>' +
     '<option value="GB">' + regionName("GB") + '</option><option value="US">' + regionName("US") + '</option>' +
     '<option disabled>──────────</option>' +
@@ -289,12 +300,8 @@ function buildCountries(){
 function applyCountry(c){
   country = ISO.includes(c) ? c : "";
   $("#country").value = country;
-  const r = R(), intl = !RULESET[country];
-  $("#dial").textContent = r.dial;
-  document.querySelector(".phone").classList.toggle("intl", intl);
-  $("#phone-hint").hidden = !intl;
-  $("#phone").setAttribute("autocomplete", intl ? "tel" : "tel-national");
-  $("#phone").setAttribute("placeholder", intl ? "+" : "");
+  const r = R();
+  if (!dialChosen && DIAL[country]) setDial(country);
   $("#cityLabel").textContent = r.city;
   $("#postalLabel").innerHTML = r.postal + (r.postalRequired ? "" : ' <span class="opt">(if you have one)</span>');
   $("#postal").required = r.postalRequired;
@@ -321,16 +328,26 @@ function applyCountry(c){
   ["phone", "postal", "region"].forEach(id => { if (val(id)) validateField(id); else clearError(id); });
 }
 
+function setDial(c){
+  if (!DIAL[c]) return;
+  dialCountry = c;
+  $("#dialSel").value = c;
+  $("#dial").textContent = "+" + DIAL[c];
+}
+
 function init(){
   document.documentElement.lang = locale(currency);
   buildCountries();
   const draft = readDraft();
   const fromParam = (params.get("country") || "").toUpperCase();
   applyCountry(draft.country || (ISO.includes(fromParam) ? fromParam : "") || CURRENCY_COUNTRY[currency] || "");
+  if (draft.dial && DIAL[draft.dial]) { dialChosen = draft.dial !== country; setDial(draft.dial); }
+  if (!dialCountry) setDial(country || "GB");
   restoreDraft(draft);
   renderSummary();
   loadCharge();
 
+  $("#dialSel").addEventListener("change", () => { dialChosen = true; setDial($("#dialSel").value); if (val("phone")) validateField("phone"); saveDraft(); });
   $("#country").addEventListener("change", () => { applyCountry($("#country").value); validateField("country"); saveDraft(); });
   document.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => {
     qty = Math.max(1, Math.min(10, qty + Number(b.dataset.q)));
@@ -411,23 +428,21 @@ function renderSummary(){
 const val = id => ($("#" + id)?.value || "").trim();
 function normalisePhone(raw){
   let d = raw.replace(/[^\d+]/g, "");
-  if (country === "GB") {
-    if (d.startsWith("+44")) d = d.slice(3); else if (d.startsWith("0044")) d = d.slice(4);
-    d = d.replace(/^0/, "");
-    return /^\d{9,10}$/.test(d) ? "+44" + d : null;
-  }
-  if (country === "US") {
-    if (d.startsWith("+1")) d = d.slice(2); else if (d.length === 11 && d.startsWith("1")) d = d.slice(1);
-    return /^[2-9]\d{9}$/.test(d) ? "+1" + d : null;
-  }
   if (d.startsWith("00")) d = "+" + d.slice(2);
-  return /^\+[1-9]\d{7,14}$/.test(d) ? d : null;
+  // Typed a full international number: check its length only.
+  if (d.startsWith("+")) return /^\+[1-9]\d{7,14}$/.test(d) ? d : null;
+  const code = DIAL[dialCountry] || "44";
+  if (code === "44") { d = d.replace(/^0/, ""); return /^\d{9,10}$/.test(d) ? "+44" + d : null; }
+  if (code === "1") { if (d.length === 11 && d.startsWith("1")) d = d.slice(1); return /^[2-9]\d{9}$/.test(d) ? "+1" + d : null; }
+  if (!["IT", "SM", "VA"].includes(dialCountry)) d = d.replace(/^0/, "");   // drop the domestic trunk 0
+  const full = "+" + code + d;
+  return /^\+[1-9]\d{7,14}$/.test(full) && d.length >= 4 ? full : null;
 }
 const RULES = {
   email: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "Enter an email address like name@example.com.",
-  phone: v => normalisePhone(v) ? "" : (country === "GB" ? "Enter a UK phone number, like 07700 900123."
-            : country === "US" ? "Enter a 10-digit US phone number, like (555) 123-4567."
-            : "Enter your phone number with your country code, starting with +."),
+  phone: v => normalisePhone(v) ? "" : (DIAL[dialCountry] === "44" ? "Enter a UK phone number, like 07700 900123."
+            : DIAL[dialCountry] === "1" ? "Enter a 10-digit phone number, like (555) 123-4567."
+            : "Enter a valid phone number. Check the country code is right."),
   country: v => v ? "" : "Select your country.",
   first: v => v ? "" : "Enter your first name.",
   last: v => v ? "" : "Enter your last name.",
@@ -455,7 +470,7 @@ function validateField(id){
 
 /* ---------- draft (kept only for this browser tab) ---------- */
 const FIELDS = ["email","phone","first","last","line1","line2","city","region","postal"];
-function saveDraft(){ const d = { country }; FIELDS.forEach(f => d[f] = val(f)); store.set(SS, draftKey(), JSON.stringify(d)); }
+function saveDraft(){ const d = { country, dial: dialCountry }; FIELDS.forEach(f => d[f] = val(f)); store.set(SS, draftKey(), JSON.stringify(d)); }
 function readDraft(){ try { return JSON.parse(store.get(SS, draftKey()) || "{}"); } catch(e) { return {}; } }
 function restoreDraft(d){ FIELDS.forEach(f => { if (d[f] && $("#" + f)) $("#" + f).value = d[f]; }); }
 
