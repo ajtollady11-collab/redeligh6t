@@ -115,8 +115,9 @@ function cleanCustomer(input, market) {
   for (const k of Object.keys(address)) if (!address[k]) delete address[k];
   const data = {};
   if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) data.buyer_email = email;
-  const phoneOk = country === "GB" ? /^\+44\d{9,10}$/.test(phone)
-                : country === "US" ? /^\+1[2-9]\d{9}$/.test(phone)
+  // The phone can be from any country (not only the shipping country).
+  const phoneOk = phone.startsWith("+44") ? /^\+44\d{9,10}$/.test(phone)
+                : phone.startsWith("+1") ? /^\+1[2-9]\d{9}$/.test(phone)
                 : /^\+[1-9]\d{7,14}$/.test(phone);
   if (phoneOk) data.buyer_phone_number = phone;
   const needsPostcode = country === "GB" || country === "US";
